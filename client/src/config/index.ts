@@ -12,8 +12,8 @@ const config: Record<string, Config> = {
     USE_HTTPS: true,
   },
   production: {
-    API_BASE_URL: '/api', // Use relative path for static deployment
-    WS_URL: 'wss://your-netlify-app-name.netlify.app',
+    API_BASE_URL: '/.netlify/functions', // Use Netlify Functions
+    WS_URL: 'wss://cryptocall.netlify.app', // WebSocket not available in functions, will fallback
     USE_HTTPS: true,
   },
   test: {
