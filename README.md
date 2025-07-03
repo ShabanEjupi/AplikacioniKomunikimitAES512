@@ -263,6 +263,7 @@ secure-comms/
 ### 📱 Why Deploy Online?
 
 If you're testing with two users on mobile phones, you **MUST** deploy the application online because:
+
 - Mobile devices cannot access `localhost` from your computer
 - Both users need to connect to the same server instance
 - Real-time features require a publicly accessible server
@@ -270,6 +271,7 @@ If you're testing with two users on mobile phones, you **MUST** deploy the appli
 ### 🔧 Quick Deployment Steps
 
 #### 1. Push to GitHub
+
 ```bash
 # Initialize git (if not already done)
 git init
@@ -283,6 +285,7 @@ git push -u origin main
 ```
 
 #### 2. Deploy Frontend to Netlify
+
 1. Go to [Netlify](https://netlify.com) and sign up
 2. Click "New site from Git"
 3. Connect your GitHub repository
@@ -292,7 +295,9 @@ git push -u origin main
 5. Deploy!
 
 #### 3. Deploy Backend to Railway/Heroku
+
 For Railway (recommended):
+
 1. Go to [Railway](https://railway.app)
 2. Connect your GitHub repository
 3. Select the `server` folder
@@ -305,7 +310,9 @@ For Railway (recommended):
    ```
 
 #### 4. Update Configuration
+
 After backend deployment, update `client/src/config/index.ts`:
+
 ```typescript
 production: {
   API_BASE_URL: 'https://your-backend-url.railway.app/api',
@@ -315,11 +322,13 @@ production: {
 ```
 
 #### 5. Test with Mobile Phones
+
 1. Open the Netlify URL on both phones
 2. Create different user accounts
 3. Start chatting securely!
 
 ### 🔗 Expected URLs After Deployment
+
 - **Frontend**: `https://your-app-name.netlify.app`
 - **Backend**: `https://your-app-name.railway.app`
 
@@ -335,13 +344,13 @@ npm run demo:security
 
 **What it demonstrates:**
 
-- Complete V�rtetimi i p�rdoruesit flow
+- Complete Vërtetimi i përdoruesit flow
 - Key generation and management
 - Enkriptimi i mesazheve/decryption
 - Secure protocol implementation
 - Alert system functionality
 
-### Ash-512 Analiza e Performanc�s
+### Ash-512 Analiza e Performancës
 
 ```bash
 npm run demo:ash512
@@ -350,7 +359,7 @@ npm run demo:ash512
 **What it demonstrates:**
 
 - Ash-512 hash computation
-- Performance Krahasimi i performanc�s across different data sizes
+- Performance Krahasimi i performancës across different data sizes
 - Comparison with Sha-512
 - Detailed timing analysis
 
@@ -412,7 +421,7 @@ npm test
 
 - [X] User registration and authentication system
 - [X] TLS handshake protocol implementation
-- [X] Secure Menaxhimi i �el�save system
+- [X] Secure Menaxhimi i çelësave system
 - [X] Aes Enkriptimi i mesazheve
 - [X] Digital signature implementation
 - [X] SSL/TLS attack protection
@@ -423,7 +432,7 @@ npm test
 
 - [X] Full Ash-512 algorithm implementation
 - [X] Coordinate geometry mathematical operations
-- [X] Performance Krahasimi i performanc�s system
+- [X] Performance Krahasimi i performancës system
 - [X] Comparison with standard algorithms
 - [X] Detailed timing analysis
 - [X] Multiple data size testing
@@ -434,8 +443,8 @@ npm test
 
 This project covers the following textbook units:
 
-1. **V�rtetimi i p�rdoruesit** - bcrypt hashing, session management
-2. **Cryptographic Menaxhimi i �el�save** - secure key generation and storage
+1. **Vërtetimi i përdoruesit** - bcrypt hashing, session management
+2. **Cryptographic Menaxhimi i çelësave** - secure key generation and storage
 3. **TLS handshake protocol** - complete handshake implementation
 4. **TLS record protocol** - message formatting and processing
 5. **Change cipher spec protocol** - cipher suite negotiation
@@ -468,7 +477,7 @@ This project covers the following textbook units:
 ### System performance
 
 - **Enkriptimi i mesazheve**: < 5ms average
-- **V�rtetimi i p�rdoruesit**: < 50ms average
+- **Vërtetimi i përdoruesit**: < 50ms average
 - **TLS handshake**: < 200ms average
 - **Alert response**: < 10ms average
 
@@ -535,7 +544,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🎯 Conclusion
 
-This project successfully demonstrates a complete Komunikimi i Sigurt system with both theoretical understanding and practical implementation. The combination of modern cryptographic techniques, secure protocols, and Analiza e Performanc�s provides a comprehensive view of secure system design and cryptographic algorithm implementation.
+This project successfully demonstrates a complete Komunikimi i Sigurt system with both theoretical understanding and practical implementation. The combination of modern cryptographic techniques, secure protocols, and Analiza e Performancës provides a comprehensive view of secure system design and cryptographic algorithm implementation.
 
 **Key accomplishments:**
 
@@ -543,7 +552,7 @@ This project successfully demonstrates a complete Komunikimi i Sigurt system wit
 - ✨ Novel Ash-512 Algoritmi hash implementation
 - ✨ Comprehensive security feature coverage
 - ✨ Real-world applicable security measures
-- ✨ Analiza e Performanc�s and Krahasimi i performanc�s
+- ✨ Analiza e Performancës and Krahasimi i performancës
 - ✨ Production-ready code structure
 
 6. Ensure ts-node and react-scripts are installed as dependencies in package.json files for server and client.
@@ -637,7 +646,7 @@ Authorization: Bearer <token>
 
 ## Analiza e Performancës
 
-The Ash-512 Algoritmi hash is implemented and can be benchmarked against other algorithms. Refer to the `tests/benchmarks/hash-comparison.ts` file for Testimi i performanc�s details.
+The Ash-512 Algoritmi hash is implemented and can be benchmarked against other algorithms. Refer to the `tests/benchmarks/hash-comparison.ts` file for Testimi i performancës details.
 
 ## Contributing
 

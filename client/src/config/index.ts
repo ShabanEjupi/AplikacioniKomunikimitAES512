@@ -12,8 +12,8 @@ const config: Record<string, Config> = {
     USE_HTTPS: true,
   },
   production: {
-    API_BASE_URL: 'https://your-app-name.herokuapp.com/api', // We'll update this after deployment
-    WS_URL: 'https://your-app-name.herokuapp.com',
+    API_BASE_URL: '/api', // Use relative path for static deployment
+    WS_URL: 'wss://your-netlify-app-name.netlify.app',
     USE_HTTPS: true,
   },
   test: {

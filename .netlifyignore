@@ -1,0 +1,13 @@
+# Netlify ignore file
+server/
+scripts/
+tests/
+*.md
+*.pdf
+*.ps1
+.env*
+.vscode/
+.idea/
+node_modules/
+*/node_modules/
+*.log

@@ -65,7 +65,7 @@ Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "1. Create a GitHub repository" -ForegroundColor White
 Write-Host "2. Push to GitHub:" -ForegroundColor White
 Write-Host "   git branch -M main" -ForegroundColor Gray
-Write-Host "   git remote add origin https://github.com/yourusername/your-repo.git" -ForegroundColor Gray
+Write-Host "   git remote add origin https://github.com/ShabanEjupi/AplikacioniKomunikimitAES512.git" -ForegroundColor Gray
 Write-Host "   git push -u origin main" -ForegroundColor Gray
 Write-Host ""
 Write-Host "3. Deploy frontend to Netlify (connect GitHub repo)" -ForegroundColor White
