@@ -15,12 +15,12 @@
 
 [[redirects]]
   from = "/api/registration-status"
-  to = "/.netlify/functions/registration-status"
+  to = "/.netlify/functions/registration-status-simple"
   status = 200
 
 [[redirects]]
   from = "/api/login"
-  to = "/.netlify/functions/login-enhanced"
+  to = "/.netlify/functions/login-simple"
   status = 200
 
 [[redirects]]
@@ -61,11 +61,6 @@
 [[redirects]]
   from = "/api/system/status"
   to = "/.netlify/functions/system-status"
-  status = 200
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
   status = 200
 
 [[redirects]]
