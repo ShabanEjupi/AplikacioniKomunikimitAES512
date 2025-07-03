@@ -9,6 +9,11 @@
   CI = "true"
 
 [[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health-check"
+  status = 200
+
+[[redirects]]
   from = "/api/messages/*"
   to = "/.netlify/functions/messages-conversation/:splat"
   status = 200
@@ -36,6 +41,26 @@
 [[redirects]]
   from = "/api/register"
   to = "/.netlify/functions/register"
+  status = 200
+
+[[redirects]]
+  from = "/api/users"
+  to = "/.netlify/functions/users"
+  status = 200
+
+[[redirects]]
+  from = "/api/message"
+  to = "/.netlify/functions/message"
+  status = 200
+
+[[redirects]]
+  from = "/api/messages"
+  to = "/.netlify/functions/messages"
+  status = 200
+
+[[redirects]]
+  from = "/api/conversation/*"
+  to = "/.netlify/functions/conversation"
   status = 200
 
 [[redirects]]

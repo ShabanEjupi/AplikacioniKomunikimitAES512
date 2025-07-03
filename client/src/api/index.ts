@@ -2,6 +2,11 @@ import axios from 'axios';
 import SessionManager from '../auth/session';
 import config from '../config';
 
+console.log('🔧 API Client initializing...');
+console.log('🌍 Environment:', process.env.NODE_ENV);
+console.log('🌐 Config:', config);
+console.log('📍 Base URL:', config.API_BASE_URL);
+
 const apiClient = axios.create({
     baseURL: config.API_BASE_URL,
     timeout: 10000,
@@ -12,6 +17,9 @@ const apiClient = axios.create({
 
 // Intercept requests to add the session token
 apiClient.interceptors.request.use((config) => {
+    console.log('📤 API Request:', config.method?.toUpperCase(), config.url);
+    console.log('📍 Full URL:', (config.baseURL || '') + (config.url || ''));
+    
     const sessionManager = SessionManager.getInstance();
     const token = sessionManager.getToken();
     if (token) {
@@ -19,13 +27,25 @@ apiClient.interceptors.request.use((config) => {
     }
     return config;
 }, (error) => {
+    console.error('❌ Request interceptor error:', error);
     return Promise.reject(error);
 });
 
 // Handle SSL certificate issues in development
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log('✅ API Response:', response.config.method?.toUpperCase(), response.config.url, response.status);
+        console.log('📊 Response data:', response.data);
+        return response;
+    },
     (error) => {
+        console.error('❌ API Error:', error.config?.method?.toUpperCase(), error.config?.url);
+        console.error('📍 Full URL:', (error.config?.baseURL || '') + (error.config?.url || ''));
+        console.error('Status:', error.response?.status);
+        console.error('Data:', error.response?.data);
+        console.error('Code:', error.code);
+        console.error('Message:', error.message);
+        
         if (error.code === 'CERT_HAS_EXPIRED' || error.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE') {
             console.warn('SSL certificate issue in development mode:', error.message);
         }
@@ -35,12 +55,16 @@ apiClient.interceptors.response.use(
 
 // Thirrjet Api për vërtetimin e përdoruesit
 export const registerUser = async (userData: {username: string, password: string}) => {
+    console.log('📤 Registering user:', userData.username);
     const response = await apiClient.post('/register', userData);
+    console.log('✅ Registration response:', response.data);
     return response.data;
 };
 
 export const loginUser = async (credentials: {username: string, password: string}) => {
+    console.log('📤 Logging in user:', credentials.username);
     const response = await apiClient.post('/login', credentials);
+    console.log('✅ Login response:', response.data);
     return response.data;
 };
 
@@ -105,7 +129,9 @@ export const deleteConversationForEveryone = async (recipientId: string) => {
 
 // Registration status API
 export const fetchRegistrationStatus = async () => {
+    console.log('📤 Fetching registration status...');
     const response = await apiClient.get('/registration-status');
+    console.log('✅ Registration status response:', response.data);
     return response.data;
 };
 

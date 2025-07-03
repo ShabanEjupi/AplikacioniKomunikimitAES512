@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, registerUser, fetchRegistrationStatus } from '../api/index';
 import SessionManager from '../auth/session';
+import DebugInfo from './DebugInfo';
+import ApiDiagnostics from './ApiDiagnostics';
 
 interface RegistrationStatus {
     registrationEnabled: boolean;
@@ -25,10 +27,23 @@ const Login: React.FC = () => {
 
     const checkRegistrationStatus = async () => {
         try {
+            console.log('🔍 Checking registration status...');
             const status = await fetchRegistrationStatus();
+            console.log('✅ Registration status received:', status);
             setRegistrationStatus(status);
-        } catch (error) {
-            console.error('Failed to check registration status:', error);
+        } catch (error: any) {
+            console.error('❌ Failed to check registration status:', error);
+            console.error('Status:', error.response?.status);
+            console.error('Data:', error.response?.data);
+            console.error('URL:', error.config?.url);
+            console.error('Code:', error.code);
+            
+            // Set a fallback status to show an error message
+            setRegistrationStatus({
+                registrationEnabled: false,
+                hasDefaultUsers: false,
+                availableUsers: []
+            });
         }
     };
 
@@ -389,6 +404,10 @@ const Login: React.FC = () => {
                     </div>
                 )}
             </div>
+            
+            {/* Debug Info - only show in development or when there are errors */}
+            {(process.env.NODE_ENV === 'development' || error) && <DebugInfo />}
+            {(process.env.NODE_ENV === 'development' || error) && <ApiDiagnostics />}
             
             <style>{`
                 @keyframes spin {

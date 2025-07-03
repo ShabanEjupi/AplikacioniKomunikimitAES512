@@ -26,6 +26,9 @@ users.set('charlie', {
 });
 
 exports.handler = async (event, context) => {
+  console.log('🔍 Login function called:', event.httpMethod, event.path);
+  console.log('Headers:', event.headers);
+  
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -36,6 +39,7 @@ exports.handler = async (event, context) => {
 
   // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
+    console.log('✅ Handling OPTIONS request');
     return {
       statusCode: 200,
       headers,
@@ -44,6 +48,7 @@ exports.handler = async (event, context) => {
   }
 
   if (event.httpMethod !== 'POST') {
+    console.log('❌ Invalid method:', event.httpMethod);
     return {
       statusCode: 405,
       headers,
@@ -52,9 +57,14 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    console.log('📤 Processing login request...');
+    console.log('Body:', event.body);
+    
     const { username, password } = JSON.parse(event.body);
+    console.log('🔐 Login attempt for username:', username);
 
     if (!username || !password) {
+      console.log('❌ Missing credentials');
       return {
         statusCode: 400,
         headers,
@@ -64,7 +74,11 @@ exports.handler = async (event, context) => {
 
     // Find user
     const user = users.get(username);
+    console.log('👤 User found:', !!user);
+    console.log('Available users:', Array.from(users.keys()));
+    
     if (!user) {
+      console.log('❌ User not found:', username);
       return {
         statusCode: 401,
         headers,
@@ -74,7 +88,10 @@ exports.handler = async (event, context) => {
 
     // Verify password
     const hashedPassword = hash(password);
+    console.log('🔒 Password verification...');
+    
     if (user.password !== hashedPassword) {
+      console.log('❌ Password mismatch');
       return {
         statusCode: 401,
         headers,
@@ -84,6 +101,7 @@ exports.handler = async (event, context) => {
 
     // Generate token (simplified for demo)
     const token = Buffer.from(`${user.userId}:${username}:${Date.now()}`).toString('base64');
+    console.log('✅ Login successful for user:', username);
 
     return {
       statusCode: 200,
@@ -97,11 +115,11 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ error: 'Internal server error: ' + error.message })
     };
   }
 };

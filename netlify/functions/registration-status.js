@@ -1,4 +1,6 @@
 exports.handler = async (event, context) => {
+  console.log('🔍 Registration status function called:', event.httpMethod, event.path);
+  
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -7,10 +9,12 @@ exports.handler = async (event, context) => {
   };
 
   if (event.httpMethod === 'OPTIONS') {
+    console.log('✅ Handling OPTIONS request');
     return { statusCode: 200, headers, body: '' };
   }
 
   if (event.httpMethod !== 'GET') {
+    console.log('❌ Invalid method:', event.httpMethod);
     return {
       statusCode: 405,
       headers,
@@ -19,6 +23,8 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    console.log('📤 Returning registration status...');
+    
     // Return registration status and available test users
     const registrationStatus = {
       registrationEnabled: true,
@@ -31,6 +37,8 @@ exports.handler = async (event, context) => {
       ]
     };
 
+    console.log('✅ Registration status response:', registrationStatus);
+
     return {
       statusCode: 200,
       headers,
@@ -38,11 +46,11 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('Registration status error:', error);
+    console.error('❌ Registration status error:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ error: 'Internal server error: ' + error.message })
     };
   }
 };
