@@ -1,0 +1,40 @@
+{
+  "name": "crypto-512-root",
+  "version": "1.0.0",
+  "description": "Crypto 512 - Aplikacioni i komunikimit të sigurt me ASH-512 hash dhe koordinata gjeometrike",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "install:all": "npm install --legacy-peer-deps && npm install --legacy-peer-deps --workspaces",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm start",
+    "start:demo": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "dev": "npm run start:demo"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0",
+    "concurrently": "^7.6.0"
+  },
+
+  "keywords": [
+    "secure",
+    "communication",
+    "authentication",
+    "encryption"
+  ],
+  "author": "Shaban Ejupi",
+  "license": "MIT"
+}
