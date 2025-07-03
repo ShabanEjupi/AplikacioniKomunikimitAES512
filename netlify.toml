@@ -14,28 +14,13 @@
   status = 200
 
 [[redirects]]
-  from = "/api/messages/*"
-  to = "/.netlify/functions/messages-conversation/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/security/info"
-  to = "/.netlify/functions/security-info"
-  status = 200
-
-[[redirects]]
-  from = "/api/system/status"
-  to = "/.netlify/functions/system-status"
-  status = 200
-
-[[redirects]]
   from = "/api/registration-status"
   to = "/.netlify/functions/registration-status"
   status = 200
 
 [[redirects]]
   from = "/api/login"
-  to = "/.netlify/functions/login"
+  to = "/.netlify/functions/login-enhanced"
   status = 200
 
 [[redirects]]
@@ -46,6 +31,11 @@
 [[redirects]]
   from = "/api/users"
   to = "/.netlify/functions/users"
+  status = 200
+
+[[redirects]]
+  from = "/api/messages/*"
+  to = "/.netlify/functions/messages-conversation/:splat"
   status = 200
 
 [[redirects]]
@@ -61,6 +51,16 @@
 [[redirects]]
   from = "/api/conversation/*"
   to = "/.netlify/functions/conversation"
+  status = 200
+
+[[redirects]]
+  from = "/api/security/info"
+  to = "/.netlify/functions/security-info"
+  status = 200
+
+[[redirects]]
+  from = "/api/system/status"
+  to = "/.netlify/functions/system-status"
   status = 200
 
 [[redirects]]

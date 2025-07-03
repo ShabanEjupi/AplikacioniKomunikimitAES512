@@ -1,3 +1,5 @@
+const { getDatabase, initializeDatabase, insertDefaultUsers } = require('./db-init.js');
+
 exports.handler = async (event, context) => {
   console.log('🔍 Registration status function called:', event.httpMethod, event.path);
   
@@ -23,18 +25,30 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('📤 Returning registration status...');
+    console.log('📤 Initializing database and checking registration status...');
+    
+    // Initialize database and default users
+    await initializeDatabase();
+    await insertDefaultUsers();
+    
+    // Check if database is working by counting users
+    const sql = getDatabase();
+    const userCount = await sql`SELECT COUNT(*) as count FROM users`;
+    
+    console.log('👥 Users in database:', userCount[0].count);
+    
+    // Get list of available users for demo
+    const users = await sql`SELECT username FROM users ORDER BY username`;
+    const availableUsers = users.map(u => `${u.username} (check default passwords)`);
     
     // Return registration status and available test users
     const registrationStatus = {
       registrationEnabled: true,
       hasDefaultUsers: true,
-      availableUsers: [
-        'testuser (password: testpass123)',
-        'alice (password: alice123)',
-        'bob (password: bob123)',
-        'charlie (password: charlie123)'
-      ]
+      userCount: parseInt(userCount[0].count),
+      availableUsers: availableUsers,
+      databaseStatus: 'connected',
+      timestamp: new Date().toISOString()
     };
 
     console.log('✅ Registration status response:', registrationStatus);
@@ -47,10 +61,22 @@ exports.handler = async (event, context) => {
 
   } catch (error) {
     console.error('❌ Registration status error:', error);
+    
+    // Fallback response when database is not available
+    const fallbackStatus = {
+      registrationEnabled: false,
+      hasDefaultUsers: false,
+      userCount: 0,
+      availableUsers: [],
+      databaseStatus: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    };
+    
     return {
-      statusCode: 500,
+      statusCode: 200, // Still return 200 but with error info
       headers,
-      body: JSON.stringify({ error: 'Internal server error: ' + error.message })
+      body: JSON.stringify(fallbackStatus)
     };
   }
 };
