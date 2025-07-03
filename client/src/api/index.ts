@@ -103,3 +103,9 @@ export const deleteConversationForEveryone = async (recipientId: string) => {
     return response.data;
 };
 
+// Registration status API
+export const fetchRegistrationStatus = async () => {
+    const response = await apiClient.get('/registration-status');
+    return response.data;
+};
+

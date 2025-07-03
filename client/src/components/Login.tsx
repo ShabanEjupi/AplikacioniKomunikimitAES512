@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../api/index';
+import { loginUser, registerUser, fetchRegistrationStatus } from '../api/index';
 import SessionManager from '../auth/session';
+
+interface RegistrationStatus {
+    registrationEnabled: boolean;
+    hasDefaultUsers: boolean;
+    availableUsers?: string[];
+}
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -9,7 +15,22 @@ const Login: React.FC = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [registrationStatus, setRegistrationStatus] = useState<RegistrationStatus | null>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        checkRegistrationStatus();
+    }, []);
+
+    const checkRegistrationStatus = async () => {
+        try {
+            const status = await fetchRegistrationStatus();
+            setRegistrationStatus(status);
+        } catch (error) {
+            console.error('Failed to check registration status:', error);
+        }
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,6 +64,60 @@ const Login: React.FC = () => {
                 errorMessage = `Hyrja dështoi: ${err.response.data.error}`;
             } else if (err.message) {
                 errorMessage = `Hyrja dështoi: ${err.message}`;
+            }
+            
+            setError(errorMessage);
+            setSuccess(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+        
+        try {
+            console.log('Duke u përpjekur të regjistrohem me:', { username, password: password.length + ' karaktere' });
+            
+            if (password.length < 6) {
+                setError('Fjalëkalimi duhet të jetë të paktën 6 karaktere');
+                return;
+            }
+            
+            const response = await registerUser({ username, password });
+            console.log('Përgjigja e regjistrimit:', response);
+            
+            if (response.user) {
+                setSuccess(true);
+                setError('');
+                setIsRegistering(false);
+                
+                // Auto-login after successful registration
+                setTimeout(async () => {
+                    try {
+                        const loginResponse = await loginUser({ username, password });
+                        if (loginResponse.token) {
+                            const session = SessionManager.getInstance();
+                            session.storeToken(loginResponse.token);
+                            navigate('/chat');
+                        }
+                    } catch (error) {
+                        setError('Registration successful, but auto-login failed. Please login manually.');
+                    }
+                }, 1500);
+            } else {
+                setError('Regjistrimi dështoi: Nuk u mor përgjigje nga serveri');
+            }
+        } catch (err: any) {
+            console.error('Gabim në regjistrim:', err);
+            let errorMessage = 'Regjistrimi dështoi. Ju lutemi provoni përsëri.';
+            
+            if (err.response?.data?.error) {
+                errorMessage = `Regjistrimi dështoi: ${err.response.data.error}`;
+            } else if (err.message) {
+                errorMessage = `Regjistrimi dështoi: ${err.message}`;
             }
             
             setError(errorMessage);
@@ -86,12 +161,12 @@ const Login: React.FC = () => {
                         fontWeight: '600',
                         color: '#333',
                         letterSpacing: '-0.5px'
-                    }}>Hyrje e sigurt</h2>
+                    }}>{isRegistering ? 'Regjistrohu' : 'Hyrje e sigurt'}</h2>
                     <p style={{ 
                         margin: '8px 0 0',
                         fontSize: '14px',
                         color: '#666'
-                    }}>Hyni në llogarinë tuaj të sigurt</p>
+                    }}>{isRegistering ? 'Krijoni një llogari të re' : 'Hyni në llogarinë tuaj të sigurt'}</p>
                 </div>
                 
                 {error && (
@@ -126,11 +201,11 @@ const Login: React.FC = () => {
                         gap: '8px'
                     }}>
                         <span>✅</span>
-                        Hyrja u krye me sukses! Duke kaluar tek biseda...
+                        {isRegistering ? 'Regjistrimi u krye me sukses! Duke kaluar tek biseda...' : 'Hyrja u krye me sukses! Duke kaluar tek biseda...'}
                     </div>
                 )}
                 
-                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <form onSubmit={isRegistering ? handleRegister : handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div>
                         <label htmlFor="username" style={{ 
                             display: 'block', 
@@ -223,34 +298,96 @@ const Login: React.FC = () => {
                                 }} />
                                 Duke u loguar...
                             </div>
-                        ) : 'Hyni'}
+                        ) : (isRegistering ? 'Regjistrohu' : 'Hyni')}
                     </button>
+                    
+                    {registrationStatus?.registrationEnabled && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsRegistering(!isRegistering);
+                                setError('');
+                                setSuccess(false);
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '14px',
+                                background: 'transparent',
+                                color: '#667eea',
+                                border: '2px solid #667eea',
+                                borderRadius: '12px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.target as HTMLElement).style.background = '#667eea';
+                                (e.target as HTMLElement).style.color = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.target as HTMLElement).style.background = 'transparent';
+                                (e.target as HTMLElement).style.color = '#667eea';
+                            }}
+                        >
+                            {isRegistering ? 'Keni llogari? Hyni' : 'Nuk keni llogari? Regjistrohuni'}
+                        </button>
+                    )}
                 </form>
                 
-                <div style={{ 
-                    marginTop: '30px', 
-                    padding: '20px', 
-                    backgroundColor: '#f8fafc', 
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0'
-                }}>
+                {registrationStatus?.hasDefaultUsers && (
                     <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px',
-                        marginBottom: '12px',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#64748b'
+                        marginTop: '30px', 
+                        padding: '20px', 
+                        backgroundColor: '#f8fafc', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
                     }}>
-                        <span>🔧</span>
-                        Kredencialet për testim
+                        <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            marginBottom: '12px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            color: '#64748b'
+                        }}>
+                            <span>🔧</span>
+                            Kredencialet për testim
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
+                            <div><strong>Emri i përdoruesit:</strong> testuser</div>
+                            <div><strong>Fjalëkalimi:</strong> testpass123</div>
+                            {registrationStatus?.availableUsers && (
+                                <div style={{ marginTop: '8px' }}>
+                                    <strong>Përdorues të disponueshëm:</strong> {registrationStatus.availableUsers.join(', ')}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
-                        <div><strong>Emri i përdoruesit:</strong> testuser</div>
-                        <div><strong>Fjalëkalimi:</strong> testpass123</div>
+                )}
+                
+                {!registrationStatus?.registrationEnabled && !registrationStatus?.hasDefaultUsers && (
+                    <div style={{ 
+                        marginTop: '30px', 
+                        padding: '20px', 
+                        backgroundColor: '#fef7e0', 
+                        borderRadius: '12px',
+                        border: '1px solid #f59e0b'
+                    }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            color: '#f59e0b'
+                        }}>
+                            <span>⚠️</span>
+                            No users available and registration is disabled
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
             
             <style>{`

@@ -9,12 +9,15 @@ yarn-error.log*
 /server/dist
 /shared/dist
 
-# Environment variables
+# Environment variables - CRITICAL SECURITY
 .env
 .env.local
 .env.development
 .env.production
-.env.example
+.env.test
+
+# NEVER commit the real .env file!
+# Only commit .env.example as template
 
 # Logs
 logs
@@ -55,3 +58,13 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Security - Additional protection
+*.secret
+*.private
+*_rsa
+*_dsa
+*.p12
+*.pfx
+secrets/
+private/

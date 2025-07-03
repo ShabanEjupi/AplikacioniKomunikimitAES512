@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserAuthentication } from '../auth/authentication';
 import SessionManager from '../auth/session';
@@ -24,28 +24,86 @@ export function createRoutes(io: SocketIOServer) {
     const messageStore = getMessageStore(); // Use persistent message store
     const groupChatService = getGroupChatService(); // Initialize group chat service
 
-// Ruta e regjistrimit të përdoruesit
-router.post('/register', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await userAuth.register(username, password);
-        res.status(201).json({ user });
-    } catch (error) {
-        res.status(400).json({ error: (error as Error).message });
-    }
-});
+    // Ruta e regjistrimit të përdoruesit
+    router.post('/register', async (req, res): Promise<void> => {
+        try {
+            // Check if registration is enabled
+            if (!userAuth.isRegistrationEnabled()) {
+                res.status(403).json({ 
+                    error: 'Registration is currently disabled',
+                    canRegister: false 
+                });
+                return;
+            }
 
-// Ruta e hyrjes së përdoruesit
-router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const token = await userAuth.login(username, password);
-        sessionManager.storeSession(token);
-        res.status(200).json({ token });
-    } catch (error) {
-        res.status(401).json({ error: (error as Error).message });
-    }
-});
+            const { username, password } = req.body;
+            
+            // Validate input
+            if (!username || !password) {
+                res.status(400).json({ 
+                    error: 'Username and password are required' 
+                });
+                return;
+            }
+
+            const user = await userAuth.register(username, password);
+            console.log(`✅ User registered successfully: ${username}`);
+            
+            res.status(201).json({ 
+                user,
+                message: 'User registered successfully',
+                canRegister: true
+            });
+        } catch (error) {
+            console.error(`❌ Registration failed:`, error);
+            res.status(400).json({ 
+                error: (error as Error).message,
+                canRegister: userAuth.isRegistrationEnabled()
+            });
+        }
+    });
+
+    // Ruta e hyrjes së përdoruesit
+    router.post('/login', async (req, res): Promise<void> => {
+        try {
+            const { username, password } = req.body;
+            
+            // Validate input
+            if (!username || !password) {
+                res.status(400).json({ 
+                    error: 'Username and password are required' 
+                });
+                return;
+            }
+
+            console.log(`🔐 Login attempt for user: ${username}`);
+            
+            const token = await userAuth.login(username, password);
+            sessionManager.storeSession(token);
+            
+            console.log(`✅ Login successful for user: ${username}`);
+            
+            res.status(200).json({ 
+                token,
+                message: 'Login successful',
+                user: { username }
+            });
+        } catch (error) {
+            console.error(`❌ Login failed for user ${req.body?.username}:`, error);
+            res.status(401).json({ 
+                error: (error as Error).message 
+            });
+        }
+    });
+
+    // Add a route to check registration status
+    router.get('/registration-status', (req, res): void => {
+        res.json({
+            registrationEnabled: userAuth.isRegistrationEnabled(),
+            hasDefaultUsers: userAuth.getAllUsers().length > 0,
+            availableUsers: process.env.NODE_ENV === 'development' ? userAuth.getAllUsers() : undefined
+        });
+    });
 
 // Pika përfundimtare për dërgimin e mesazhit me AES-512 encryption
 router.post('/message', isAuthenticated, async (req: AuthenticatedRequest, res): Promise<void> => {
@@ -621,15 +679,85 @@ const sessionManager = new SessionManager(SESSION_SECRET);
 const keyManager = new KeyManager();
 const messageStore = getMessageStore();
 
-// Create a dummy router with basic functionality
-router.post('/register', async (req, res) => {
+// Enhanced register route with security features
+router.post('/register', async (req, res): Promise<void> => {
+    try {
+        // Check if registration is enabled
+        if (!userAuth.isRegistrationEnabled()) {
+            res.status(403).json({ 
+                error: 'Registration is currently disabled',
+                canRegister: false 
+            });
+            return;
+        }
+
+        const { username, password } = req.body;
+        
+        // Validate input
+        if (!username || !password) {
+            res.status(400).json({ 
+                error: 'Username and password are required' 
+            });
+            return;
+        }
+
+        const user = await userAuth.register(username, password);
+        console.log(`✅ User registered successfully: ${username}`);
+        
+        res.status(201).json({ 
+            user,
+            message: 'User registered successfully',
+            canRegister: true
+        });
+    } catch (error) {
+        console.error(`❌ Registration failed:`, error);
+        res.status(400).json({ 
+            error: (error as Error).message,
+            canRegister: userAuth.isRegistrationEnabled()
+        });
+    }
+});
+
+// Enhanced login route with better logging
+router.post('/login', async (req, res): Promise<void> => {
     try {
         const { username, password } = req.body;
-        const user = await userAuth.register(username, password);
-        res.status(201).json({ user });
+        
+        // Validate input
+        if (!username || !password) {
+            res.status(400).json({ 
+                error: 'Username and password are required' 
+            });
+            return;
+        }
+
+        console.log(`🔐 Login attempt for user: ${username}`);
+        
+        const token = await userAuth.login(username, password);
+        sessionManager.storeSession(token);
+        
+        console.log(`✅ Login successful for user: ${username}`);
+        
+        res.status(200).json({ 
+            token,
+            message: 'Login successful',
+            user: { username }
+        });
     } catch (error) {
-        res.status(400).json({ error: (error as Error).message });
+        console.error(`❌ Login failed for user ${req.body?.username}:`, error);
+        res.status(401).json({ 
+            error: (error as Error).message 
+        });
     }
+});
+
+// Registration status route
+router.get('/registration-status', (req, res): void => {
+    res.json({
+        registrationEnabled: userAuth.isRegistrationEnabled(),
+        hasDefaultUsers: userAuth.getAllUsers().length > 0,
+        availableUsers: process.env.NODE_ENV === 'development' ? userAuth.getAllUsers() : undefined
+    });
 });
 
 export default router;
