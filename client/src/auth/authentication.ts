@@ -5,7 +5,7 @@ export default class UserAuthentication {
 
     constructor(apiUrl?: string) {
         if (process.env.NODE_ENV === 'production') {
-            this.apiUrl = '/.netlify/functions';
+            this.apiUrl = 'https://cryptocall.netlify.app/.netlify/functions';
         } else {
             this.apiUrl = apiUrl || 'http://localhost:3000/api';
         }
