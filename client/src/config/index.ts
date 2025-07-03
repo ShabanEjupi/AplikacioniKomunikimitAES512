@@ -7,9 +7,9 @@ interface Config {
 
 const config: Record<string, Config> = {
   development: {
-    API_BASE_URL: 'https://localhost:3001/api',
-    WS_URL: 'https://localhost:3001',
-    USE_HTTPS: true,
+    API_BASE_URL: 'http://localhost:3000/api',
+    WS_URL: 'http://localhost:3000',
+    USE_HTTPS: false,
   },
   production: {
     API_BASE_URL: '/api', // Use /api prefix with redirects to functions

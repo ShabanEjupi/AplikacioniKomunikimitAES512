@@ -29,7 +29,7 @@ const PORT = Number(config.port || 3000); // Konverto në numër në mënyrë ek
 
 // Konfigurimi i CORS
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3005', 'https://localhost:3001', 'http://localhost:3003'],
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3005', 'https://localhost:3001', 'http://localhost:3003', 'http://localhost:3100'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -51,8 +51,8 @@ const httpsServer = https.createServer(tlsOptions, app);
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Konfiguro Socket.IO për komunikim në kohë reale
-const io = new Server(httpsServer, {
+// Konfiguro Socket.IO për komunikim në kohë reale - përdor HTTP server për development
+const io = new Server(httpServer, {
   cors: {
     origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
     credentials: true
