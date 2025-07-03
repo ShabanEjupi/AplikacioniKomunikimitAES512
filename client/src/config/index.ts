@@ -12,7 +12,7 @@ const config: Record<string, Config> = {
     USE_HTTPS: true,
   },
   production: {
-    API_BASE_URL: '/.netlify/functions', // Use Netlify Functions
+    API_BASE_URL: '/api', // Use /api prefix with redirects to functions
     WS_URL: 'wss://cryptocall.netlify.app', // WebSocket not available in functions, will fallback
     USE_HTTPS: true,
   },
