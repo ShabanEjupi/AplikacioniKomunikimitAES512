@@ -1,5 +1,3 @@
-// Simple registration status without database dependency
-
 exports.handler = async (event, context) => {
   console.log('🔍 Registration status function called:', event.httpMethod, event.path);
   
@@ -27,7 +25,7 @@ exports.handler = async (event, context) => {
   try {
     console.log('📤 Returning registration status...');
     
-    // Return registration status and available test users (in-memory for demo)
+    // Return registration status and available test users
     const registrationStatus = {
       registrationEnabled: true,
       hasDefaultUsers: true,

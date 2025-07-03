@@ -14,13 +14,18 @@
   status = 200
 
 [[redirects]]
+  from = "/api/health-check"
+  to = "/.netlify/functions/health-check"
+  status = 200
+
+[[redirects]]
   from = "/api/registration-status"
-  to = "/.netlify/functions/registration-status-simple"
+  to = "/.netlify/functions/registration-status-minimal"
   status = 200
 
 [[redirects]]
   from = "/api/login"
-  to = "/.netlify/functions/login-simple"
+  to = "/.netlify/functions/login-minimal"
   status = 200
 
 [[redirects]]

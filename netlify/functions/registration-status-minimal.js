@@ -1,5 +1,3 @@
-// Simple registration status without database dependency
-
 exports.handler = async (event, context) => {
   console.log('🔍 Registration status function called:', event.httpMethod, event.path);
   
@@ -27,7 +25,7 @@ exports.handler = async (event, context) => {
   try {
     console.log('📤 Returning registration status...');
     
-    // Return registration status and available test users (in-memory for demo)
+    // Return registration status and available test users
     const registrationStatus = {
       registrationEnabled: true,
       hasDefaultUsers: true,
@@ -36,7 +34,9 @@ exports.handler = async (event, context) => {
         'alice (password: alice123)',
         'bob (password: bob123)',
         'charlie (password: charlie123)'
-      ]
+      ],
+      timestamp: new Date().toISOString(),
+      functionName: 'registration-status-minimal'
     };
 
     console.log('✅ Registration status response:', registrationStatus);
@@ -52,7 +52,10 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error: ' + error.message })
+      body: JSON.stringify({ 
+        error: 'Internal server error: ' + error.message,
+        timestamp: new Date().toISOString()
+      })
     };
   }
 };
