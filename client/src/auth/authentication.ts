@@ -3,8 +3,12 @@ import axios from 'axios';
 export default class UserAuthentication {
     private apiUrl: string;
 
-    constructor(apiUrl: string = 'http://localhost:3000/api') {
-        this.apiUrl = apiUrl;
+    constructor(apiUrl?: string) {
+        if (process.env.NODE_ENV === 'production') {
+            this.apiUrl = '/.netlify/functions';
+        } else {
+            this.apiUrl = apiUrl || 'http://localhost:3000/api';
+        }
     }
 
     async register(username: string, password: string): Promise<any> {
