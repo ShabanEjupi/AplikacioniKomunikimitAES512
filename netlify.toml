@@ -24,6 +24,21 @@
   status = 200
 
 [[redirects]]
+  from = "/api/registration-status"
+  to = "/.netlify/functions/registration-status"
+  status = 200
+
+[[redirects]]
+  from = "/api/login"
+  to = "/.netlify/functions/login"
+  status = 200
+
+[[redirects]]
+  from = "/api/register"
+  to = "/.netlify/functions/register"
+  status = 200
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
