@@ -25,7 +25,7 @@ interface AuthenticatedSocket extends Socket {
 
 // Krijo aplikacionin Express
 const app = express();
-const PORT = Number(config.port || 3000); // Konverto në numër në mënyrë eksplicite
+const PORT = Number(config.port || 3001); // Konverto në numër në mënyrë eksplicite
 
 // Konfigurimi i CORS
 const corsOptions = {

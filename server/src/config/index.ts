@@ -4,7 +4,7 @@ import path from 'path';
 dotenv.config();
 
 const config = {
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 3001,
     // Using file-based storage instead of MongoDB
     dataDir: process.env.DATA_DIR || path.join(process.cwd(), 'data'),
     uploadsDir: process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads'),

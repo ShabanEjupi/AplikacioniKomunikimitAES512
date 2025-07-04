@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Debug Test</title>
+</head>
+<body>
+    <h1>API Debug Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function testAPI() {
+            results.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                // Test registration status
+                console.log('Testing /api/registration-status...');
+                const regStatus = await fetch('http://localhost:3001/api/registration-status');
+                const regData = await regStatus.json();
+                results.innerHTML += `<p>✅ Registration Status: ${JSON.stringify(regData)}</p>`;
+                
+                // Test login
+                console.log('Testing /api/login...');
+                const loginResponse = await fetch('http://localhost:3001/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'testuser', password: 'testpass123' })
+                });
+                const loginData = await loginResponse.json();
+                results.innerHTML += `<p>✅ Login: ${JSON.stringify(loginData)}</p>`;
+                
+                if (loginData.token) {
+                    // Test users with token
+                    console.log('Testing /api/users with token...');
+                    const usersResponse = await fetch('http://localhost:3001/api/users', {
+                        headers: { 'Authorization': `Bearer ${loginData.token}` }
+                    });
+                    const usersData = await usersResponse.json();
+                    results.innerHTML += `<p>✅ Users: ${JSON.stringify(usersData)}</p>`;
+                }
+                
+            } catch (error) {
+                console.error('API Test Error:', error);
+                results.innerHTML += `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run test immediately
+        testAPI();
+    </script>
+</body>
+</html>

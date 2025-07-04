@@ -18,8 +18,8 @@ if (!(Test-Path "server\data")) { New-Item -ItemType Directory -Path "server\dat
 
 Write-Host ""
 Write-Host "Starting the application..." -ForegroundColor Green
-Write-Host "Backend Server: http://localhost:3000" -ForegroundColor White
-Write-Host "Frontend Client: http://localhost:3001" -ForegroundColor White
+Write-Host "Backend Server: http://localhost:3001" -ForegroundColor White
+Write-Host "Frontend Client: http://localhost:3000" -ForegroundColor White
 Write-Host ""
 Write-Host "Features available:" -ForegroundColor Cyan
 Write-Host "   Text messaging with encryption" -ForegroundColor Green

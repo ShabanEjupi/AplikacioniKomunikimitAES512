@@ -388,8 +388,19 @@ const Chat: React.FC = () => {
     const loadUsers = async () => {
         try {
             console.log('🔄 Loading users...');
+            console.log('🔧 API Base URL:', config.API_BASE_URL);
+            console.log('🔑 Current token:', sessionManager.getToken() ? 'Present' : 'Missing');
+            
             const response = await fetchUsers();
-            setUsers(response.users.map((username: string) => ({ username })));
+            console.log('📊 Raw users response:', response);
+            
+            if (response && response.users) {
+                setUsers(response.users.map((username: string) => ({ username })));
+                console.log('✅ Users processed:', response.users);
+            } else {
+                console.warn('⚠️ Unexpected response format:', response);
+                addToRealtimeLog('⚠️ Users response format unexpected');
+            }
             
             // Get current user from security info
             const secInfo = await fetchSecurityInfo();
@@ -398,6 +409,13 @@ const Chat: React.FC = () => {
             console.log('✅ Users loaded successfully:', response.users);
         } catch (error) {
             console.error('Failed to load users:', error);
+            console.error('Error details:', {
+                message: (error as any)?.message,
+                status: (error as any)?.response?.status,
+                statusText: (error as any)?.response?.statusText,
+                data: (error as any)?.response?.data,
+                config: (error as any)?.config
+            });
             addToRealtimeLog('❌ Failed to load users');
             
             // Only redirect to login if it's specifically an authentication error
