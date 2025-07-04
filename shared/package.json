@@ -1,0 +1,31 @@
+{
+  "name": "crypto-512-shared",
+  "version": "1.0.0",
+  "description": "Crypto 512 - Shared utilities and types for secure communication",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "keywords": [
+    "secure",
+    "communication",
+    "encryption",
+    "hash",
+    "ash-512",
+    "aes-512"
+  ],
+  "author": "Shaban Ejupi",
+  "license": "MIT"
+}
