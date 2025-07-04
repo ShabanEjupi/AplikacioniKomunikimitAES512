@@ -1522,7 +1522,7 @@ const Chat: React.FC = () => {
                             color: '#2e7d32',
                             fontWeight: '500'
                         }}>
-                            🔒 All messages are protected with AES-256-CBC encryption
+                            🔒 All messages are protected with AES-512 encryption
                         </div>
                     </div>
                 )}
