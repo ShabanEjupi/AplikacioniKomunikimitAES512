@@ -12,9 +12,11 @@
 ### 2. Add Environment Variable in Netlify
 1. Go to your Netlify site dashboard
 2. Navigate to **Site settings** → **Environment variables**
-3. Add new variable:
-   - **Key**: `DATABASE_URL`
-   - **Value**: Your Neon connection string (starts with `postgresql://...`)
+3. Add these variables:
+   - **Key**: `DATABASE_URL` **Value**: Your Neon connection string (starts with `postgresql://...`)
+   - **Key**: `NODE_ENV` **Value**: `production`
+   - **Key**: `JWT_SECRET` **Value**: Your secure JWT secret
+   - **Key**: `SESSION_SECRET` **Value**: Your secure session secret
 
 ### 3. Deploy the Updated Code
 ```bash

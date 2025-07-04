@@ -18,20 +18,32 @@ git push -u origin main
 5. Set build settings:
    - **Build command**: `cd client && npm run build`
    - **Publish directory**: `client/build`
-6. Click "Deploy site"
+6. Add environment variables in Site settings → Environment variables:
+
+   ```env
+   NODE_ENV=production
+   DATABASE_URL=your-neon-database-url-here
+   JWT_SECRET=your-super-secret-jwt-key-here
+   SESSION_SECRET=your-super-secret-session-key-here
+   ```
+
+7. Click "Deploy site"
 
 ### 3. Deploy Backend (Server) to Railway
+
 1. Go to [Railway](https://railway.app)
 2. Sign up/login with GitHub
 3. Click "New Project" > "Deploy from GitHub repo"
 4. Select your repository
 5. Add environment variables:
-   ```
+
+   ```env
    NODE_ENV=production
    PORT=3001
    SESSION_SECRET=your-super-secret-session-key-here
    JWT_SECRET=your-super-secret-jwt-key-here
    ```
+
 6. Deploy!
 
 ### 4. Update Frontend Configuration

@@ -494,10 +494,16 @@ This project covers the following textbook units:
 ### Environment variables
 
 ```env
+# Environment Configuration
+NODE_ENV=development  # Use 'production' for deployment
+
 # Server Configuration
 PORT=3000
 JWT_SECRET=your_jwt_secret_key
 SESSION_SECRET=your_session_secret_key
+
+# Database (for Netlify deployment)
+DATABASE_URL=postgresql://user:pass@host:port/db
 
 # TLS configuration
 TLS_KEY=certs/key.pem
@@ -506,6 +512,11 @@ TLS_CERT=certs/cert.pem
 # Security Settings
 ALERT_THRESHOLD=5
 ```
+
+**Important for Production:**
+- **Always set `NODE_ENV=production`** in deployment environments (Netlify, Railway, etc.)
+- Generate secure secrets using: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+- Never use development secrets in production
 
 ### TLS certificates
 

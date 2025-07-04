@@ -3,13 +3,14 @@ const { neon } = require('@neondatabase/serverless');
 
 // Initialize database connection
 function getDatabase() {
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
   
   if (!databaseUrl) {
-    console.error('❌ DATABASE_URL environment variable not set');
+    console.error('❌ DATABASE_URL or NETLIFY_DATABASE_URL environment variable not set');
     throw new Error('Database URL not configured');
   }
   
+  console.log('🔗 Using database URL:', databaseUrl.substring(0, 50) + '...');
   return neon(databaseUrl);
 }
 
@@ -25,9 +26,22 @@ async function initializeDatabase() {
         username VARCHAR(50) UNIQUE NOT NULL,
         password_hash VARCHAR(128) NOT NULL,
         user_id VARCHAR(20) UNIQUE NOT NULL,
+        is_active BOOLEAN DEFAULT true,
+        last_login TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `;
+
+    // Add missing columns if they don't exist (for existing databases)
+    await sql`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true
+    `;
+    
+    await sql`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS last_login TIMESTAMP
     `;
 
     // Create messages table

@@ -1,7 +1,19 @@
 const { neon } = require('@neondatabase/serverless');
 
 // Get database connection
-const sql = neon(process.env.DATABASE_URL);
+function getDatabase() {
+  const databaseUrl = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
+  
+  if (!databaseUrl) {
+    console.error('❌ DATABASE_URL or NETLIFY_DATABASE_URL environment variable not set');
+    throw new Error('Database URL not configured');
+  }
+  
+  console.log('🔗 Using database URL:', databaseUrl.substring(0, 50) + '...');
+  return neon(databaseUrl);
+}
+
+const sql = getDatabase();
 
 exports.handler = async (event, context) => {
   console.log('💬 Messages function with database called:', event.httpMethod, event.path);

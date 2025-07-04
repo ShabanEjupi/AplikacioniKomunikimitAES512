@@ -348,7 +348,7 @@ router.get('/security/info', isAuthenticated, (req, res): void => {
         const allMessages = messageStore.getAllMessages();
         const securityInfo = {
             currentUser: currentUserId,
-            encryptionStatus: 'AES-256-CBC Active',
+            encryptionStatus: 'AES-512 Active',
             keyManagement: 'RSA-2048 Key Exchange',
             hashFunction: 'ASH-512 Custom Implementation',
             sessionSecurity: 'JWT with HMAC-SHA256',
@@ -359,7 +359,7 @@ router.get('/security/info', isAuthenticated, (req, res): void => {
             lastActivity: new Date().toISOString(),
             securityLevel: 'High',
             algorithms: {
-                symmetric: 'AES-256-CBC',
+                symmetric: 'AES-512',
                 asymmetric: 'RSA-2048',
                 hash: 'ASH-512',
                 signature: 'ECDSA-P256'

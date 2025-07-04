@@ -394,9 +394,17 @@ const Chat: React.FC = () => {
             const response = await fetchUsers();
             console.log('📊 Raw users response:', response);
             
-            if (response && response.users) {
+            if (response && Array.isArray(response)) {
+                // New format: array of user objects with userId and username
+                setUsers(response.map((user: any) => ({
+                    username: user.username,
+                    userId: user.userId
+                })));
+                console.log('✅ Users processed:', response);
+            } else if (response && response.users) {
+                // Legacy format: users property with array of usernames
                 setUsers(response.users.map((username: string) => ({ username })));
-                console.log('✅ Users processed:', response.users);
+                console.log('✅ Users processed (legacy format):', response.users);
             } else {
                 console.warn('⚠️ Unexpected response format:', response);
                 addToRealtimeLog('⚠️ Users response format unexpected');
@@ -406,7 +414,7 @@ const Chat: React.FC = () => {
             const secInfo = await fetchSecurityInfo();
             setCurrentUser(secInfo.currentUser);
             addToRealtimeLog(`👤 User: ${secInfo.currentUser}`);
-            console.log('✅ Users loaded successfully:', response.users);
+            console.log('✅ Users loaded successfully:', Array.isArray(response) ? response : response.users);
         } catch (error) {
             console.error('Failed to load users:', error);
             console.error('Error details:', {
@@ -1080,7 +1088,7 @@ const Chat: React.FC = () => {
                         🔒 Security Status: Active
                     </div>
                     <div style={{ fontSize: '11px', color: '#4caf50', marginTop: '4px' }}>
-                        End-to-end encryption enabled • AES-256-CBC
+                        End-to-end encryption enabled • AES-512
                     </div>
                 </div>
 
