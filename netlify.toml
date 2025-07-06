@@ -1,17 +1,21 @@
+# Set the base directory to the repository root
+# This overrides any conflicting UI settings.
 [build]
+  base    = "/" 
   publish = "client/build"
-  # Use the install script you already defined in your root package.json
-  command = "npm run install:all && npm run build" 
+  # Simplified and more robust build command for Netlify
+  command = "npm install --legacy-peer-deps && npm run build"
   functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18.20.8"
-  NPM_VERSION = "9"
-  CI = "false"
+  NPM_VERSION = "9" # Specifying NPM version is good practice
+  CI = "false" # Often helps with create-react-app builds
   SKIP_PREFLIGHT_CHECK = "true"
   NODE_OPTIONS = "--max-old-space-size=4096"
   GENERATE_SOURCEMAP = "false"
 
+# Your redirects remain the same
 [[redirects]]
   from = "/api/health"
   to = "/.netlify/functions/health-check"
