@@ -3,7 +3,7 @@
 // This provides a compatible interface for client-side hashing needs
 
 // Use crypto-js for browser compatibility
-import CryptoJS from 'crypto-js';
+import * as CryptoJS from 'crypto-js';
 
 const BLOCK_SIZE = 64; // 512 bits
 const DIGEST_SIZE = 64; // 512 bits
@@ -34,8 +34,8 @@ function padInput(input: string): string {
  */
 function hash(input: string): string {
     const paddedInput = padInput(input);
-    const hash = CryptoJS.SHA512(paddedInput);
-    return hash.toString(CryptoJS.enc.Hex);
+    const hashResult = CryptoJS.SHA512(paddedInput);
+    return CryptoJS.enc.Hex.stringify(hashResult);
 }
 
 function performanceAnalysis(input: string): number {
