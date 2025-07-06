@@ -2,6 +2,8 @@
 
 // Simple client-only build script for Netlify deployment
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 console.log('🚀 Building Crypto 512 Client...');
 
@@ -19,34 +21,40 @@ function runCommand(command, options = {}) {
 
 function main() {
   try {
-    // Set environment variables for client build
+    // Set environment variables for better compatibility
     process.env.SKIP_PREFLIGHT_CHECK = 'true';
     process.env.GENERATE_SOURCEMAP = 'false';
     process.env.NODE_OPTIONS = '--max-old-space-size=4096';
-    process.env.NODE_ENV = 'production';
 
-    // Step 1: Install client dependencies only
-    console.log('\n📦 Installing client dependencies...');
+    // Go to client directory
     process.chdir('client');
-    
-    // Delete package-lock.json to avoid workspace conflicts
+
+    // Clean install to avoid version conflicts
+    console.log('\n🧹 Cleaning existing node_modules...');
     const fs = require('fs');
+    const path = require('path');
+    
+    if (fs.existsSync('node_modules')) {
+      fs.rmSync('node_modules', { recursive: true, force: true });
+    }
+    
     if (fs.existsSync('package-lock.json')) {
       fs.unlinkSync('package-lock.json');
     }
-    
-    // Use npm install with fresh lockfile
+
+    // Install client dependencies
+    console.log('\n📦 Installing client dependencies...');
     if (!runCommand('npm install --legacy-peer-deps')) {
       throw new Error('Failed to install client dependencies');
     }
 
-    // Step 2: Build client
+    // Build client
     console.log('\n🎯 Building client application...');
     if (!runCommand('npm run build')) {
       throw new Error('Failed to build client');
     }
-    
-    console.log('\n✅ Build completed successfully!');
+
+    console.log('\n✅ Client build completed successfully!');
     
   } catch (error) {
     console.error('\n❌ Build failed:', error.message);

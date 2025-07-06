@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-// Simple client-only build script for Netlify deployment
+// TypeScript version fix build script for Netlify deployment
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-console.log('🚀 Building Crypto 512 Client...');
+console.log('🚀 Building Crypto 512 with TypeScript Version Fix...');
 
 function runCommand(command, options = {}) {
   try {
@@ -19,33 +21,38 @@ function runCommand(command, options = {}) {
 
 function main() {
   try {
-    // Set environment variables for client build
+    // Set environment variables for better compatibility
+    process.env.NODE_ENV = 'production';
     process.env.SKIP_PREFLIGHT_CHECK = 'true';
     process.env.GENERATE_SOURCEMAP = 'false';
     process.env.NODE_OPTIONS = '--max-old-space-size=4096';
-    process.env.NODE_ENV = 'production';
 
-    // Step 1: Install client dependencies only
-    console.log('\n📦 Installing client dependencies...');
+    console.log('\n📦 Installing dependencies with legacy peer deps...');
+    
+    // Install dependencies with force to resolve conflicts
+    if (!runCommand('npm install --legacy-peer-deps --force')) {
+      throw new Error('Failed to install dependencies with force');
+    }
+
+    console.log('\n🔧 Installing client dependencies...');
     process.chdir('client');
     
-    // Delete package-lock.json to avoid workspace conflicts
-    const fs = require('fs');
-    if (fs.existsSync('package-lock.json')) {
-      fs.unlinkSync('package-lock.json');
+    // Make sure we have compatible TypeScript version
+    if (!runCommand('npm install typescript@4.9.5 --save-dev --legacy-peer-deps')) {
+      console.log('Warning: Could not install specific TypeScript version');
     }
     
-    // Use npm install with fresh lockfile
-    if (!runCommand('npm install --legacy-peer-deps')) {
+    if (!runCommand('npm install --legacy-peer-deps --force')) {
       throw new Error('Failed to install client dependencies');
     }
 
-    // Step 2: Build client
     console.log('\n🎯 Building client application...');
     if (!runCommand('npm run build')) {
       throw new Error('Failed to build client');
     }
     
+    process.chdir('..');
+
     console.log('\n✅ Build completed successfully!');
     
   } catch (error) {

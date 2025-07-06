@@ -3,7 +3,7 @@
 [build]
   base    = "/" 
   publish = "client/build"
-  # Use comprehensive build script
+  # Use simple client-only build script
   command = "node build-netlify.js"
   functions = "netlify/functions"
 
@@ -14,6 +14,8 @@
   SKIP_PREFLIGHT_CHECK = "true"
   NODE_OPTIONS = "--max-old-space-size=4096"
   GENERATE_SOURCEMAP = "false"
+  NPM_CONFIG_LEGACY_PEER_DEPS = "true"
+  NPM_CONFIG_FORCE = "true"
 
 # Your redirects remain the same
 [[redirects]]
