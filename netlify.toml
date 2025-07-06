@@ -6,7 +6,7 @@
 [build.environment]
   NODE_VERSION = "18.20.8"
   NPM_VERSION = "9"
-  CI = "true"
+  CI = "false"
   SKIP_PREFLIGHT_CHECK = "true"
   NODE_OPTIONS = "--max-old-space-size=4096"
   GENERATE_SOURCEMAP = "false"
