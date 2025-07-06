@@ -9,7 +9,10 @@
     "shared"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build:shared && npm run build:client",
+    "build:shared": "cd shared && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
     "test": "jest",
     "test:watch": "jest --watch",
     "install:all": "npm install --legacy-peer-deps && npm install --legacy-peer-deps --workspaces",

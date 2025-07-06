@@ -4,7 +4,6 @@
   "description": "Netlify Functions for Crypto 512 API with Database Support",
   "main": "index.js",
   "dependencies": {
-    "crypto": "^1.0.1",
     "@neondatabase/serverless": "^0.9.0"
   },
   "engines": {

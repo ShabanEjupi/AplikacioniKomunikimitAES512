@@ -1,12 +1,15 @@
 [build]
   publish = "client/build"
-  command = "npm ci --legacy-peer-deps && npm run install:all && cd client && npm run build && cd ../netlify/functions && npm install"
+  command = "npm install --legacy-peer-deps && npm run build"
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "18.20.8"
   NPM_VERSION = "9"
   CI = "true"
+  SKIP_PREFLIGHT_CHECK = "true"
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  GENERATE_SOURCEMAP = "false"
 
 [[redirects]]
   from = "/api/health"
