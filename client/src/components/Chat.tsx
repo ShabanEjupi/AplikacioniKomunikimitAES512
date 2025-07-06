@@ -1105,55 +1105,137 @@ const Chat: React.FC = () => {
                         fontWeight: '600'
                     }}>Select User to Chat</h3>
                     
-                    {users.filter(user => user.username !== currentUser).map((user) => (
-                        <div
-                            key={user.username}
-                            onClick={() => setSelectedUser(user.username)}
-                            style={{
-                                padding: '15px',
-                                marginBottom: '8px',
-                                background: selectedUser === user.username ? '#e3f2fd' : '#f8f9fa',
-                                border: `1px solid ${selectedUser === user.username ? '#2196f3' : '#e4e6ea'}`,
-                                borderRadius: '12px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px'
-                            }}
-                        >
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                background: selectedUser === user.username ? '#2196f3' : '#00bfa5',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '16px'
+                    {users.filter(user => user.username !== currentUser).length === 0 ? (
+                        <div style={{
+                            padding: '20px',
+                            textAlign: 'center',
+                            background: '#f8f9fa',
+                            borderRadius: '12px',
+                            border: '1px solid #e4e6ea'
+                        }}>
+                            <div style={{ 
+                                fontSize: '48px', 
+                                marginBottom: '10px' 
+                            }}>👥</div>
+                            <h4 style={{ 
+                                margin: '0 0 10px 0', 
+                                color: '#333' 
+                            }}>No Users Available</h4>
+                            <p style={{ 
+                                margin: '0 0 15px 0', 
+                                color: '#666', 
+                                fontSize: '14px' 
                             }}>
-                                {user.username.charAt(0).toUpperCase()}
+                                {!currentUser ? 
+                                    'Please login to see available users and start chatting.' :
+                                    'No other users are currently available for chat.'
+                                }
+                            </p>
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '10px', 
+                                justifyContent: 'center',
+                                flexWrap: 'wrap'
+                            }}>
+                                <button
+                                    onClick={loadUsers}
+                                    style={{
+                                        padding: '8px 16px',
+                                        background: '#2196f3',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    🔄 Refresh Users
+                                </button>
+                                {!currentUser && (
+                                    <button
+                                        onClick={() => window.location.href = '/'}
+                                        style={{
+                                            padding: '8px 16px',
+                                            background: '#4caf50',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '14px'
+                                        }}
+                                    >
+                                        🔑 Login
+                                    </button>
+                                )}
                             </div>
-                            <div>
-                                <div style={{ 
-                                    fontWeight: '600', 
-                                    fontSize: '14px',
-                                    color: '#333'
-                                }}>
-                                    {user.username}
-                                </div>
-                                <div style={{ 
-                                    fontSize: '12px', 
-                                    color: '#666',
-                                    marginTop: '2px'
-                                }}>
-                                    {selectedUser === user.username ? '🟢 Selected' : '⚪ Available'}
-                                </div>
+                            <div style={{
+                                marginTop: '15px',
+                                padding: '10px',
+                                background: '#e3f2fd',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                color: '#1976d2'
+                            }}>
+                                💡 Tip: Try these test accounts:
+                                <br />
+                                <strong>testuser</strong> / testpass123
+                                <br />
+                                <strong>alice</strong> / alice123
+                                <br />
+                                <strong>bob</strong> / bob123
                             </div>
                         </div>
-                    ))}
+                    ) : (
+                        users.filter(user => user.username !== currentUser).map(user => (
+                            <div
+                                key={user.username}
+                                onClick={() => setSelectedUser(user.username)}
+                                style={{
+                                    padding: '15px',
+                                    marginBottom: '8px',
+                                    background: selectedUser === user.username ? '#e3f2fd' : '#f8f9fa',
+                                    border: `1px solid ${selectedUser === user.username ? '#2196f3' : '#e4e6ea'}`,
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px'
+                                }}
+                            >
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '50%',
+                                    background: selectedUser === user.username ? '#2196f3' : '#00bfa5',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: '16px'
+                                }}>
+                                    {user.username.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style={{ 
+                                        fontWeight: '600', 
+                                        fontSize: '14px',
+                                        color: '#333'
+                                    }}>
+                                        {user.username}
+                                    </div>
+                                    <div style={{ 
+                                        fontSize: '12px', 
+                                        color: '#666',
+                                        marginTop: '2px'
+                                    }}>
+                                        {selectedUser === user.username ? '🟢 Selected' : '⚪ Available'}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
