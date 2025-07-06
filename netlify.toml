@@ -21,7 +21,6 @@
   NPM_CONFIG_OVERRIDES = "typescript@4.9.5"
   NPM_CONFIG_RESOLUTIONS = "typescript@4.9.5"
   # Additional npm configuration for workspace issues
-  NPM_CONFIG_WORKSPACES = "false"
   NPM_CONFIG_INCLUDE_WORKSPACE_ROOT = "false"
 
 # Your redirects remain the same
