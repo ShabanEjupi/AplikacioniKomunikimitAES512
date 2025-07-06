@@ -3,8 +3,8 @@
 [build]
   base    = "/" 
   publish = "client/build"
-  # Use simple client-only build script
-  command = "node build-netlify.js"
+  # Use the ultra-simple build script
+  command = "node build-simple-direct.js"
   functions = "netlify/functions"
 
 [build.environment]
@@ -15,7 +15,14 @@
   NODE_OPTIONS = "--max-old-space-size=4096"
   GENERATE_SOURCEMAP = "false"
   NPM_CONFIG_LEGACY_PEER_DEPS = "true"
-  NPM_CONFIG_FORCE = "true"
+  NPM_CONFIG_FORCE = "false"
+  NPM_CONFIG_WORKSPACES = "false"  # Disable workspaces
+  # TypeScript version resolution
+  NPM_CONFIG_OVERRIDES = "typescript@4.9.5"
+  NPM_CONFIG_RESOLUTIONS = "typescript@4.9.5"
+  # Additional npm configuration for workspace issues
+  NPM_CONFIG_WORKSPACES = "false"
+  NPM_CONFIG_INCLUDE_WORKSPACE_ROOT = "false"
 
 # Your redirects remain the same
 [[redirects]]
