@@ -9,10 +9,10 @@
     "shared"
   ],
   "scripts": {
-    "build": "npm run build:shared && npm run build:client",
-    "build:shared": "cd shared && npm run build",
-    "build:server": "cd server && npm run build",
-    "build:client": "cd client && npm run build",
+    "build": "npm run build:client",
+    "build:shared": "cd shared && npm install && npx tsc -p tsconfig.json",
+    "build:server": "cd server && npm install && npm run build",
+    "build:client": "cd client && npm install && npm run build",
     "test": "jest",
     "test:watch": "jest --watch",
     "install:all": "npm install --legacy-peer-deps && npm install --legacy-peer-deps --workspaces",
@@ -22,7 +22,8 @@
     "dev": "npm run start:demo"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.4"
+    "@neondatabase/serverless": "^0.9.4",
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.0.0",
