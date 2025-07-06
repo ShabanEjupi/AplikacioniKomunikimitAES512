@@ -21,6 +21,9 @@
     "start:demo": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "dev": "npm run start:demo"
   },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.4"
+  },
   "devDependencies": {
     "@jest/globals": "^29.0.0",
     "@types/jest": "^29.0.0",
