@@ -4,7 +4,7 @@
   base    = "/" 
   publish = "client/build"
   # Use the ultra-simple build script
-  command = "node build-simple-direct.js"
+  command = "node build-netlify-fixed.js"
   functions = "netlify/functions"
 
 [build.environment]
