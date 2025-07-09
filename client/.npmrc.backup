@@ -1,0 +1,7 @@
+workspaces=false
+include-workspace-root=false
+legacy-peer-deps=true
+audit=false
+fund=false
+save=false
+package-lock=false
