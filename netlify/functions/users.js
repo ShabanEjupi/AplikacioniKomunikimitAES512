@@ -1,25 +1,31 @@
-const { neon } = require('@neondatabase/serverless');
+// Simple users function
+const crypto = require('crypto');
 
-// Get database connection
-function getDatabase() {
-  const databaseUrl = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
-  
-  if (!databaseUrl) {
-    console.error('❌ DATABASE_URL or NETLIFY_DATABASE_URL environment variable not set');
-    throw new Error('Database URL not configured');
-  }
-  
-  console.log('🔗 Using database URL:', databaseUrl.substring(0, 50) + '...');
-  return neon(databaseUrl);
-}
+// In-memory user storage (same as other functions)
+let users = new Map();
+
+const hashPassword = (password) => {
+  return crypto.createHash('sha256').update(password).digest('hex');
+};
+
+// Initialize with test users
+users.set('testuser', { 
+  username: 'testuser', 
+  password: hashPassword('testpass123'), 
+  userId: '1001' 
+});
+users.set('alice', { 
+  username: 'alice', 
+  password: hashPassword('alice123'), 
+  userId: '1002' 
+});
 
 exports.handler = async (event, context) => {
-  console.log('👥 Users function called:', event.httpMethod, event.path);
-  
+  // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json'
   };
 
@@ -36,37 +42,27 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const sql = getDatabase();
-    
-    // Query database for active users
-    const users = await sql`
-      SELECT user_id, username, created_at, last_login
-      FROM users 
-      WHERE is_active = true
-      ORDER BY created_at DESC
-    `;
-    
-    console.log(`📊 Found ${users.length} active users`);
-    
-    // Transform to expected format
-    const userList = users.map(user => ({
-      userId: user.user_id,
+    // Return list of users (without passwords)
+    const userList = Array.from(users.values()).map(user => ({
       username: user.username,
-      createdAt: user.created_at,
-      lastLogin: user.last_login
+      userId: user.userId
     }));
-    
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(userList)
+      body: JSON.stringify({ 
+        users: userList,
+        count: userList.length
+      })
     };
+
   } catch (error) {
     console.error('Users error:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error', details: error.message })
+      body: JSON.stringify({ error: 'Internal server error' })
     };
   }
 };

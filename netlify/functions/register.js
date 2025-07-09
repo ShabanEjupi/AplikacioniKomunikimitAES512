@@ -1,47 +1,37 @@
-const { hash } = require('../../shared/src/crypto/ash512-impl.js');
+// Simple user registration function
+const crypto = require('crypto');
 
-// In-memory user storage for demo (use database in production)
+// In-memory user storage for demo
 let users = new Map();
 let userIdCounter = 1000;
 
 // Initialize with test users
+const hashPassword = (password) => {
+  return crypto.createHash('sha256').update(password).digest('hex');
+};
+
 users.set('testuser', { 
   username: 'testuser', 
-  password: hash('testpass123'), 
+  password: hashPassword('testpass123'), 
   userId: '1001' 
 });
 users.set('alice', { 
   username: 'alice', 
-  password: hash('alice123'), 
+  password: hashPassword('alice123'), 
   userId: '1002' 
-});
-users.set('bob', { 
-  username: 'bob', 
-  password: hash('bob123'), 
-  userId: '1003' 
-});
-users.set('charlie', { 
-  username: 'charlie', 
-  password: hash('charlie123'), 
-  userId: '1004' 
 });
 
 exports.handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json'
   };
 
-  // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return { statusCode: 200, headers, body: '' };
   }
 
   if (event.httpMethod !== 'POST') {
@@ -59,11 +49,10 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Username and password are required' })
+        body: JSON.stringify({ error: 'Username and password required' })
       };
     }
 
-    // Check if user already exists
     if (users.has(username)) {
       return {
         statusCode: 409,
@@ -73,8 +62,8 @@ exports.handler = async (event, context) => {
     }
 
     // Create new user
+    const hashedPassword = hashPassword(password);
     const userId = (++userIdCounter).toString();
-    const hashedPassword = hash(password);
     
     users.set(username, {
       username,
@@ -82,17 +71,12 @@ exports.handler = async (event, context) => {
       userId
     });
 
-    // Generate token (simplified for demo)
-    const token = Buffer.from(`${userId}:${username}:${Date.now()}`).toString('base64');
-
     return {
       statusCode: 201,
       headers,
-      body: JSON.stringify({
+      body: JSON.stringify({ 
         message: 'User registered successfully',
-        token,
-        userId,
-        username
+        userId 
       })
     };
 

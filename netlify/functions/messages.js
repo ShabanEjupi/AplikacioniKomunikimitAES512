@@ -1,11 +1,13 @@
-// In-memory message storage for demo
+// Simple message handling function
 let messages = [];
+let messageIdCounter = 1000;
 
 exports.handler = async (event, context) => {
+  // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json'
   };
 
@@ -19,41 +21,46 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify(messages)
+        body: JSON.stringify({ 
+          messages: messages.slice(-50) // Return last 50 messages
+        })
       };
     }
 
     if (event.httpMethod === 'POST') {
-      const { message, recipientId } = JSON.parse(event.body);
-      const authHeader = event.headers.authorization;
-      
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      const { message, senderId, recipientId } = JSON.parse(event.body);
+
+      if (!message || !senderId) {
         return {
-          statusCode: 401,
+          statusCode: 400,
           headers,
-          body: JSON.stringify({ error: 'Unauthorized' })
+          body: JSON.stringify({ error: 'Message and senderId required' })
         };
       }
 
-      // Decode token to get sender info
-      const token = authHeader.split(' ')[1];
-      const [senderId, username] = Buffer.from(token, 'base64').toString().split(':');
-
+      // Create new message
       const newMessage = {
-        id: Date.now().toString(),
+        id: (++messageIdCounter).toString(),
         content: message,
-        timestamp: new Date().toISOString(),
         senderId,
         recipientId: recipientId || 'all',
-        senderUsername: username
+        timestamp: new Date().toISOString()
       };
 
       messages.push(newMessage);
 
+      // Keep only last 100 messages in memory
+      if (messages.length > 100) {
+        messages = messages.slice(-100);
+      }
+
       return {
         statusCode: 201,
         headers,
-        body: JSON.stringify(newMessage)
+        body: JSON.stringify({ 
+          message: 'Message sent successfully',
+          messageId: newMessage.id
+        })
       };
     }
 
