@@ -19,7 +19,8 @@
     "start:server": "cd server && npm start",
     "start:client": "cd client && npm start",
     "start:demo": "concurrently \"npm run start:server\" \"npm run start:client\"",
-    "dev": "npm run start:demo"
+    "dev": "npm run start:demo",
+    "demo:ash512": "cd scripts && npx ts-node ash512-performance.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.4"

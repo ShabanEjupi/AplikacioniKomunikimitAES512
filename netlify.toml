@@ -3,8 +3,8 @@
 [build]
   base    = "/" 
   publish = "client/build"
-  # Use the ultra-simple build script
-  command = "node build-netlify-fixed.js"
+  # Use the minimal build script that avoids workspace conflicts
+  command = "node build-netlify-minimal.js"
   functions = "netlify/functions"
 
 [build.environment]

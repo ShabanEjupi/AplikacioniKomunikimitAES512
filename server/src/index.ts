@@ -29,7 +29,16 @@ const PORT = Number(config.port || 3001); // Konverto në numër në mënyrë ek
 
 // Konfigurimi i CORS
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3005', 'https://localhost:3001', 'http://localhost:3003', 'http://localhost:3100'],
+  origin: [
+    'https://cryptocall.netlify.app',
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://localhost:3002', 
+    'http://localhost:3005', 
+    'https://localhost:3001', 
+    'http://localhost:3003', 
+    'http://localhost:3100'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -235,12 +244,12 @@ const keyManager = new KeyManager();
 
 // Nis serverët
 httpServer.listen(PORT, () => {
-  console.log(`Serveri http po funksionon në http://localhost:${PORT}`);
+  console.log(`🌐 HTTP Server running on port ${PORT}`);
 });
 
 const httpsPort = PORT + 1;
 httpsServer.listen(httpsPort, () => {
-  console.log(`Serveri https po funksionon në https://localhost:${httpsPort}`);
+  console.log(`🔒 HTTPS Server running on port ${httpsPort}`);
 });
 
 // Nis tls server-in

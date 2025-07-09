@@ -131,8 +131,8 @@ npm run dev
 
 **Access the application:**
 
-- Frontend: http://localhost:3001
-- Backend API: http://localhost:3000
+- Frontend: [https://cryptocall.netlify.app](https://cryptocall.netlify.app)
+- Backend API: [https://cryptocall.netlify.app/api](https://cryptocall.netlify.app/api)
 
 ## 📱 How to Use
 
@@ -253,8 +253,8 @@ secure-comms/
    ```
 3. **Access the application**
 
-   - Client: `Https://localhost:3001`
-   - Server Api: `Https://localhost:3000/Api`
+   - Client: [https://cryptocall.netlify.app](https://cryptocall.netlify.app)
+   - Server Api: [https://cryptocall.netlify.app/api](https://cryptocall.netlify.app/api)
 
 ---
 
