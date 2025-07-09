@@ -3,8 +3,8 @@
 [build]
   base    = "/" 
   publish = "client/build"
-  # Use the minimal build script that avoids workspace conflicts
-  command = "node build-netlify-minimal.js"
+  # Use the isolated build script that completely avoids workspace conflicts
+  command = "node build-netlify-isolated.js"
   functions = "netlify/functions"
 
 [build.environment]
@@ -17,6 +17,7 @@
   NPM_CONFIG_LEGACY_PEER_DEPS = "true"
   NPM_CONFIG_FORCE = "false"
   NPM_CONFIG_WORKSPACES = "false"  # Disable workspaces
+  NPM_CONFIG_WORKSPACE = "false"   # Additional workspace disable
   # TypeScript version resolution
   NPM_CONFIG_OVERRIDES = "typescript@4.9.5"
   NPM_CONFIG_RESOLUTIONS = "typescript@4.9.5"
