@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Fix Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .success { background: rgba(0,255,0,0.2); border: 1px solid rgba(0,255,0,0.5); }
+        .error { background: rgba(255,0,0,0.2); border: 1px solid rgba(255,0,0,0.5); }
+        .info { background: rgba(0,100,255,0.2); border: 1px solid rgba(0,100,255,0.5); }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin: 5px;
+            width: 200px;
+        }
+        input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Authentication Fix Test</h1>
+        <p>Test the fixed authentication system and verify the login redirect loop is resolved.</p>
+        
+        <div class="test-result info">
+            <strong>📋 Test Instructions:</strong><br>
+            1. Try logging in with test credentials<br>
+            2. Verify you stay logged in after successful login<br>
+            3. Check that logout works properly<br>
+            4. Confirm no more infinite redirects
+        </div>
+
+        <h3>🔑 Available Test Users:</h3>
+        <div class="test-result info">
+            • <strong>testuser</strong> / testpass123<br>
+            • <strong>alice</strong> / alice123<br>
+            • <strong>bob</strong> / bob123<br>
+            • <strong>charlie</strong> / charlie123
+        </div>
+
+        <h3>🧪 Quick API Test:</h3>
+        <div>
+            <input type="text" id="username" placeholder="Username" value="testuser">
+            <input type="password" id="password" placeholder="Password" value="testpass123">
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="testLogout()">Test Logout</button>
+            <button onclick="checkAuth()">Check Auth Status</button>
+        </div>
+
+        <div id="results"></div>
+
+        <h3>🎯 What Was Fixed:</h3>
+        <div class="test-result success">
+            ✅ <strong>Fixed Missing User Data:</strong> Login now stores both token AND user data<br>
+            ✅ <strong>Added Route Guards:</strong> ProtectedRoute prevents access without auth<br>
+            ✅ <strong>Unified Auth Systems:</strong> SessionManager and localStorage now sync<br>
+            ✅ <strong>Proper Navigation:</strong> Authenticated users redirect to chat, not login<br>
+            ✅ <strong>Enhanced Logout:</strong> Clears all authentication data properly
+        </div>
+
+        <h3>🚀 Main Application:</h3>
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 10px; font-weight: 600; font-size: 18px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                🔐 Open Secure Chat App
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = '/api';
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            addResult('🔄 Testing login...', 'info');
+            
+            try {
+                const response = await fetch(`${apiUrl}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Store auth data like the real app does
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    
+                    addResult(`✅ Login successful! Token: ${data.token?.substring(0, 20)}..., User: ${data.user?.username}`, 'success');
+                } else {
+                    addResult(`❌ Login failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                addResult(`🚨 Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogout() {
+            addResult('🔄 Testing logout...', 'info');
+            
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            
+            addResult('✅ Logout completed - cleared auth data', 'success');
+        }
+
+        async function checkAuth() {
+            addResult('🔄 Checking authentication status...', 'info');
+            
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('currentUser');
+            
+            if (token && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    addResult(`✅ Authenticated as: ${userData.username} (ID: ${userData.userId})`, 'success');
+                } catch (e) {
+                    addResult(`⚠️ Auth data found but malformed: ${e.message}`, 'error');
+                }
+            } else {
+                addResult('❌ Not authenticated - missing token or user data', 'error');
+            }
+        }
+
+        // Initial auth check
+        window.onload = () => {
+            addResult('🔐 Authentication Fix Test Ready', 'info');
+            checkAuth();
+        };
+    </script>
+</body>
+</html>

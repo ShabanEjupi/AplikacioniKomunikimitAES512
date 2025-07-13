@@ -6,6 +6,53 @@ A simplified secure communication platform deployed on Netlify.
 
 Visit: [cryptocall.netlify.app](https://cryptocall.netlify.app)
 
+## 🏠 Localhost Development
+
+### Quick Start Options
+
+#### Option 1: Use the startup scripts
+```bash
+# Windows Batch File
+start-development.bat
+
+# PowerShell
+.\start-development.ps1
+```
+
+#### Option 2: Manual startup
+```bash
+# Terminal 1: Start backend server (port 3001)
+node simple-server.js
+
+# Terminal 2: Start React frontend (port 3000)  
+npm start
+```
+
+#### Option 3: Single command (requires concurrently package)
+```bash
+npm run dev-local
+```
+
+### 🔧 Troubleshooting
+
+#### "No users available and registration is disabled"
+This error occurs when the backend server is not running. Make sure:
+
+1. Backend server is running on port 3001: `node simple-server.js`
+2. You can test the API: `http://localhost:3001/.netlify/functions/registration-status`
+3. The client should show test users available
+
+#### Default Test Users
+- **Username:** testuser, **Password:** testpass123  
+- **Username:** alice, **Password:** alice123
+- **Username:** bob, **Password:** bob123
+- **Username:** charlie, **Password:** charlie123
+
+#### Ports
+- **Frontend (React):** http://localhost:3000
+- **Backend (API):** http://localhost:3001  
+- **API Functions:** http://localhost:3001/.netlify/functions/
+
 ## 📋 Features
 
 - **User Authentication**: Simple register/login system

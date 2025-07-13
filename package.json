@@ -26,7 +26,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev": "netlify dev",
-    "deploy": "npm run build && netlify deploy --prod"
+    "deploy": "npm run build && netlify deploy --prod",
+    "server": "node simple-server.js",
+    "dev-local": "concurrently \"npm run server\" \"npm start\"",
+    "start-dev": "npm run dev-local"
   },
   "eslintConfig": {
     "extends": [
