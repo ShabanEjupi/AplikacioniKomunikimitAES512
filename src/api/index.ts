@@ -52,6 +52,26 @@ export interface Message {
   content: string;
   timestamp: string;
   encrypted?: boolean;
+  type?: 'text' | 'file' | 'image' | 'video' | 'audio';
+  fileData?: {
+    fileId: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    downloadUrl: string;
+    thumbnail?: string;
+  };
+  editedAt?: string | null;
+  reactions?: Array<{
+    userId: string;
+    emoji: string;
+    timestamp: string;
+  }>;
+  replyTo?: {
+    messageId: string;
+    content: string;
+    senderId: string;
+  } | null;
 }
 
 export interface Conversation {
@@ -186,7 +206,10 @@ export const fetchUsers = async (): Promise<User[]> => {
   }
 };
 
-// Messaging functions
+// Messaging functions with smart polling
+let lastMessageTimestamp = '';
+let lastSessionId = '';
+
 export const fetchMessages = async (conversationId?: string): Promise<Message[]> => {
   try {
     console.log('💬 Fetching messages...');
@@ -204,7 +227,21 @@ export const fetchMessages = async (conversationId?: string): Promise<Message[]>
       throw new Error(`Failed to fetch messages: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Handle new response format
+    const messages = Array.isArray(data) ? data : data.messages || [];
+    
+    // Update session tracking
+    if (data.sessionId) {
+      if (lastSessionId && lastSessionId !== data.sessionId) {
+        console.log('🔄 New session detected, clearing cache');
+        lastMessageTimestamp = '';
+      }
+      lastSessionId = data.sessionId;
+    }
+    
+    return messages;
   } catch (error: any) {
     console.error('Fetch messages error:', error);
     throw error;
@@ -251,6 +288,195 @@ export const fetchConversations = async (): Promise<Conversation[]> => {
   } catch (error: any) {
     console.error('Fetch conversations error:', error);
     throw error;
+  }
+};
+
+// File upload functions
+export const uploadFile = async (file: File, senderId: string): Promise<any> => {
+  try {
+    console.log('📎 Uploading file...');
+    
+    // Convert file to base64
+    const fileData = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const response = await fetch(`${API_BASE}/file-storage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        fileData,
+        senderId,
+        encryptionKey: 'user-specific-key'
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload file: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Upload file error:', error);
+    throw error;
+  }
+};
+
+export const sendFileMessage = async (fileData: any, senderId: string, recipientId: string): Promise<Message> => {
+  try {
+    console.log('📎 Sending file message...');
+    const response = await fetch(`${API_BASE}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: JSON.stringify({
+        senderId,
+        recipientId,
+        content: `📎 ${fileData.fileName}`,
+        encrypted: true,
+        fileData
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to send file message: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Send file message error:', error);
+    throw error;
+  }
+};
+
+// Message action functions
+export const editMessage = async (messageId: string, content: string, userId: string): Promise<Message> => {
+  try {
+    const response = await fetch(`${API_BASE}/message-actions`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: JSON.stringify({
+        messageId,
+        action: 'edit',
+        userId,
+        content
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to edit message: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Edit message error:', error);
+    throw error;
+  }
+};
+
+export const deleteMessage = async (messageId: string, userId: string): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE}/message-actions`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: JSON.stringify({
+        messageId,
+        action: 'delete',
+        userId
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete message: ${response.status}`);
+    }
+  } catch (error: any) {
+    console.error('Delete message error:', error);
+    throw error;
+  }
+};
+
+export const reactToMessage = async (messageId: string, emoji: string, userId: string): Promise<Message> => {
+  try {
+    const response = await fetch(`${API_BASE}/message-actions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: JSON.stringify({
+        messageId,
+        action: 'react',
+        userId,
+        emoji
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to react to message: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('React to message error:', error);
+    throw error;
+  }
+};
+
+export const replyToMessage = async (messageId: string, replyContent: string, userId: string): Promise<Message> => {
+  try {
+    const response = await fetch(`${API_BASE}/message-actions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: JSON.stringify({
+        messageId,
+        action: 'reply',
+        userId,
+        replyContent
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to reply to message: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Reply to message error:', error);
+    throw error;
+  }
+};
+
+// Smart polling with change detection
+export const hasNewMessages = async (lastKnownTimestamp?: string): Promise<boolean> => {
+  try {
+    const messages = await fetchMessages();
+    if (messages.length === 0) return false;
+    
+    const latestTimestamp = messages[messages.length - 1].timestamp;
+    return !lastKnownTimestamp || latestTimestamp > lastKnownTimestamp;
+  } catch (error) {
+    console.error('Check new messages error:', error);
+    return false;
   }
 };
 

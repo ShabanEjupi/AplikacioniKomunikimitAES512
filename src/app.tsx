@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import Chat from './components/Chat';
+import ChatNew from './components/ChatNew';
 import './styles/global.css';
 
 const App: React.FC = () => {
@@ -9,7 +10,8 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/chat" element={<Chat />} />
+        <Route path="/chat" element={<ChatNew />} />
+        <Route path="/chat-old" element={<Chat />} />
         <Route path="/" element={<Login />} />
       </Routes>
     </Router>

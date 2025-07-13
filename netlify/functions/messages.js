@@ -1,11 +1,24 @@
 // Messages function for Netlify
 const crypto = require('crypto');
 
-// In-memory storage for messages
-global.messages = global.messages || [];
+// Enhanced in-memory storage with session persistence
+if (!global.messagesStore) {
+  global.messagesStore = {
+    messages: [],
+    lastAccess: Date.now(),
+    sessionId: crypto.randomBytes(8).toString('hex')
+  };
+}
+
+// Auto-clean old messages to prevent memory leaks (keep last 1000 messages)
+const cleanOldMessages = () => {
+  if (global.messagesStore.messages.length > 1000) {
+    global.messagesStore.messages = global.messagesStore.messages.slice(-1000);
+  }
+};
 
 const generateId = () => {
-  return crypto.randomBytes(16).toString('hex');
+  return Date.now().toString() + '_' + crypto.randomBytes(8).toString('hex');
 };
 
 exports.handler = async (event, context) => {
@@ -23,13 +36,17 @@ exports.handler = async (event, context) => {
 
   try {
     if (event.httpMethod === 'GET') {
+      // Clean old messages and update last access
+      cleanOldMessages();
+      global.messagesStore.lastAccess = Date.now();
+      
       // Get messages
       const { conversationId } = event.queryStringParameters || {};
       
-      let filteredMessages = global.messages;
+      let filteredMessages = global.messagesStore.messages;
       
       if (conversationId) {
-        filteredMessages = global.messages.filter(msg => 
+        filteredMessages = global.messagesStore.messages.filter(msg => 
           msg.conversationId === conversationId
         );
       }
@@ -37,21 +54,25 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify(filteredMessages.sort((a, b) => 
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        ))
+        body: JSON.stringify({
+          messages: filteredMessages.sort((a, b) => 
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          ),
+          sessionId: global.messagesStore.sessionId,
+          totalMessages: global.messagesStore.messages.length
+        })
       };
     }
 
     if (event.httpMethod === 'POST') {
       // Send message
-      const { senderId, recipientId, content, encrypted } = JSON.parse(event.body || '{}');
+      const { senderId, recipientId, content, encrypted, fileData } = JSON.parse(event.body || '{}');
 
-      if (!senderId || !recipientId || !content) {
+      if (!senderId || !recipientId || (!content && !fileData)) {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: 'senderId, recipientId, and content are required' })
+          body: JSON.stringify({ error: 'senderId, recipientId, and content or fileData are required' })
         };
       }
 
@@ -59,13 +80,22 @@ exports.handler = async (event, context) => {
         id: generateId(),
         senderId,
         recipientId,
-        content,
+        content: content || '',
         timestamp: new Date().toISOString(),
         encrypted: encrypted || false,
-        conversationId: [senderId, recipientId].sort().join('_')
+        conversationId: [senderId, recipientId].sort().join('_'),
+        type: fileData ? 'file' : 'text',
+        fileData: fileData || null,
+        editedAt: null,
+        reactions: [],
+        replyTo: null
       };
 
-      global.messages.push(message);
+      global.messagesStore.messages.push(message);
+      global.messagesStore.lastAccess = Date.now();
+      
+      // Clean old messages after adding new one
+      cleanOldMessages();
 
       return {
         statusCode: 201,
