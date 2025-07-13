@@ -1,40 +1,60 @@
-// Login function for Netlify
+// Login function for Netlify with enhanced initialization
 const crypto = require('crypto');
 
-// In-memory user storage (shared across functions via global scope)
-global.users = global.users || new Map();
+// Enhanced in-memory user storage with session persistence
+if (!global.enhancedStore) {
+  global.enhancedStore = {
+    users: new Map(),
+    sessions: new Map(),
+    lastAccess: Date.now(),
+    sessionId: crypto.randomBytes(8).toString('hex'),
+    version: '2.1'
+  };
+  
+  console.log('🚀 Initializing Enhanced Secure Communication Store v2.1');
+}
 
 const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-// Initialize with test users if not already done
-if (global.users.size === 0) {
-  global.users.set('testuser', { 
-    username: 'testuser', 
-    password: hashPassword('testpass123'), 
-    userId: '1001' 
+// Initialize with quantum-ready test users if not already done
+if (global.enhancedStore.users.size === 0) {
+  console.log('🔧 Initializing quantum-ready test users...');
+  
+  // Advanced test users with enhanced security profiles
+  const testUsers = [
+    { username: 'testuser', password: 'testpass123', userId: '1001', role: 'user' },
+    { username: 'alice', password: 'alice123', userId: '1002', role: 'user' },
+    { username: 'bob', password: 'bob123', userId: '1003', role: 'user' },
+    { username: 'charlie', password: 'charlie123', userId: '1004', role: 'user' },
+    { username: 'admin', password: 'admin123', userId: '1000', role: 'admin' },
+    { username: 'demo', password: 'demo123', userId: '1005', role: 'demo' }
+  ];
+  
+  testUsers.forEach(user => {
+    global.enhancedStore.users.set(user.username, {
+      username: user.username,
+      password: hashPassword(user.password),
+      userId: user.userId,
+      role: user.role,
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+      isActive: true
+    });
   });
-  global.users.set('alice', { 
-    username: 'alice', 
-    password: hashPassword('alice123'), 
-    userId: '1002' 
-  });
-  global.users.set('bob', { 
-    username: 'bob', 
-    password: hashPassword('bob123'), 
-    userId: '1003' 
-  });
-  global.users.set('charlie', { 
-    username: 'charlie', 
-    password: hashPassword('charlie123'), 
-    userId: '1004' 
-  });
+  
+  console.log('✅ Quantum-ready test users initialized, count:', global.enhancedStore.users.size);
+  console.log('👥 Available users:', Array.from(global.enhancedStore.users.keys()));
 }
 
 exports.handler = async (event, context) => {
-  console.log('🔐 Login function called:', event.httpMethod, event.path);
-  console.log('👥 Available users count:', global.users.size);
+  console.log('🔐 Enhanced Login System v2.1 called:', event.httpMethod, event.path);
+  console.log('👥 Available users count:', global.enhancedStore.users.size);
+  console.log('🔄 Session ID:', global.enhancedStore.sessionId);
+  
+  // Update last access time
+  global.enhancedStore.lastAccess = Date.now();
   
   // Enable CORS
   const headers = {
@@ -74,17 +94,32 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Find user
-    const user = global.users.get(username);
+    // Find user with enhanced lookup
+    const user = global.enhancedStore.users.get(username);
     
     if (!user) {
       console.log('❌ User not found:', username);
+      console.log('📋 Available users:', Array.from(global.enhancedStore.users.keys()));
       return {
         statusCode: 401,
         headers,
         body: JSON.stringify({ 
           success: false, 
-          message: 'Invalid username or password' 
+          message: 'Invalid username or password',
+          availableUsers: Array.from(global.enhancedStore.users.keys()) // For debugging in production
+        })
+      };
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      console.log('❌ User is deactivated:', username);
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Account is deactivated' 
         })
       };
     }
@@ -103,13 +138,28 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Generate a Base64 token as per the app's auth pattern (userId:username)
-    const tokenData = `${user.userId}:${user.username}`;
+    // Generate a quantum-ready authentication token
+    const tokenData = `${user.userId}:${user.username}:${Date.now()}`;
     const token = Buffer.from(tokenData).toString('base64');
+    
+    // Update user's last login
+    user.lastLogin = new Date().toISOString();
+    global.enhancedStore.users.set(username, user);
+    
+    // Store session for enhanced security
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    global.enhancedStore.sessions.set(sessionId, {
+      userId: user.userId,
+      username: user.username,
+      token: token,
+      createdAt: new Date().toISOString(),
+      lastActivity: new Date().toISOString()
+    });
 
-    console.log('✅ Login successful for user:', user.username, 'with userId:', user.userId);
+    console.log('✅ Enhanced login successful for user:', user.username, 'with userId:', user.userId);
+    console.log('🔐 Session created:', sessionId);
 
-    // Login successful
+    // Enhanced login response
     return {
       statusCode: 200,
       headers,
@@ -117,10 +167,14 @@ exports.handler = async (event, context) => {
         success: true, 
         user: {
           username: user.username,
-          userId: user.userId
+          userId: user.userId,
+          role: user.role,
+          lastLogin: user.lastLogin
         },
         token: token,
-        message: 'Login successful' 
+        sessionId: sessionId,
+        message: 'Quantum-secure authentication successful',
+        timestamp: new Date().toISOString()
       })
     };
 

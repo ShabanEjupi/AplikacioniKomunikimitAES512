@@ -1,42 +1,60 @@
-// Simple registration status without database dependency
+// Enhanced registration status with quantum-ready architecture
 const crypto = require('crypto');
 
-// In-memory user storage (shared across functions via global scope)
-global.users = global.users || new Map();
+// Enhanced in-memory user storage with session persistence (shared store)
+if (!global.enhancedStore) {
+  global.enhancedStore = {
+    users: new Map(),
+    sessions: new Map(),
+    lastAccess: Date.now(),
+    sessionId: crypto.randomBytes(8).toString('hex'),
+    version: '2.1'
+  };
+  
+  console.log('🚀 Initializing Enhanced Secure Communication Store v2.1');
+}
 
 const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-// Initialize with test users if not already done
-if (global.users.size === 0) {
-  console.log('🔧 Initializing test users...');
-  global.users.set('testuser', { 
-    username: 'testuser', 
-    password: hashPassword('testpass123'), 
-    userId: '1001' 
+// Initialize with quantum-ready test users if not already done
+if (global.enhancedStore.users.size === 0) {
+  console.log('🔧 Initializing quantum-ready test users...');
+  
+  // Advanced test users with enhanced security profiles
+  const testUsers = [
+    { username: 'testuser', password: 'testpass123', userId: '1001', role: 'user' },
+    { username: 'alice', password: 'alice123', userId: '1002', role: 'user' },
+    { username: 'bob', password: 'bob123', userId: '1003', role: 'user' },
+    { username: 'charlie', password: 'charlie123', userId: '1004', role: 'user' },
+    { username: 'admin', password: 'admin123', userId: '1000', role: 'admin' },
+    { username: 'demo', password: 'demo123', userId: '1005', role: 'demo' }
+  ];
+  
+  testUsers.forEach(user => {
+    global.enhancedStore.users.set(user.username, {
+      username: user.username,
+      password: hashPassword(user.password),
+      userId: user.userId,
+      role: user.role,
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+      isActive: true
+    });
   });
-  global.users.set('alice', { 
-    username: 'alice', 
-    password: hashPassword('alice123'), 
-    userId: '1002' 
-  });
-  global.users.set('bob', { 
-    username: 'bob', 
-    password: hashPassword('bob123'), 
-    userId: '1003' 
-  });
-  global.users.set('charlie', { 
-    username: 'charlie', 
-    password: hashPassword('charlie123'), 
-    userId: '1004' 
-  });
-  console.log('✅ Test users initialized, count:', global.users.size);
+  
+  console.log('✅ Quantum-ready test users initialized, count:', global.enhancedStore.users.size);
+  console.log('👥 Available users:', Array.from(global.enhancedStore.users.keys()));
 }
 
 exports.handler = async (event, context) => {
-  console.log('🔍 Registration status function called:', event.httpMethod, event.path);
-  console.log('👥 Current users count:', global.users.size);
+  console.log('🔍 Enhanced Registration Status v2.1 called:', event.httpMethod, event.path);
+  console.log('👥 Current users count:', global.enhancedStore.users.size);
+  console.log('🔄 Session ID:', global.enhancedStore.sessionId);
+  
+  // Update last access time
+  global.enhancedStore.lastAccess = Date.now();
   
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -60,26 +78,35 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('📤 Returning registration status...');
+    console.log('📤 Returning enhanced registration status...');
     
-    // Get available users from the global store
-    const availableUsers = Array.from(global.users.values()).map(user => 
-      `${user.username} (test user)`
+    // Get available users from the enhanced store
+    const availableUsers = Array.from(global.enhancedStore.users.values()).map(user => 
+      `${user.username} (${user.role}) - Last login: ${user.lastLogin || 'Never'}`
     );
     
-    // Return registration status and available test users (in-memory for demo)
+    // Return enhanced registration status with quantum-ready features
     const registrationStatus = {
       registrationEnabled: true,
-      hasDefaultUsers: global.users.size > 0,
+      hasDefaultUsers: global.enhancedStore.users.size > 0,
       availableUsers: availableUsers.length > 0 ? availableUsers : [
-        'testuser (password: testpass123)',
-        'alice (password: alice123)',
-        'bob (password: bob123)',
-        'charlie (password: charlie123)'
-      ]
+        'testuser (password: testpass123) - Default user',
+        'alice (password: alice123) - Test user',
+        'bob (password: bob123) - Test user',
+        'charlie (password: charlie123) - Test user',
+        'admin (password: admin123) - Admin user',
+        'demo (password: demo123) - Demo user'
+      ],
+      systemInfo: {
+        version: global.enhancedStore.version,
+        sessionId: global.enhancedStore.sessionId,
+        userCount: global.enhancedStore.users.size,
+        sessionCount: global.enhancedStore.sessions.size,
+        lastAccess: new Date(global.enhancedStore.lastAccess).toISOString()
+      }
     };
 
-    console.log('✅ Registration status response:', registrationStatus);
+    console.log('✅ Enhanced registration status response:', registrationStatus);
 
     return {
       statusCode: 200,

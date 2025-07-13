@@ -12,8 +12,8 @@ const config: Record<string, Config> = {
     USE_HTTPS: false,
   },
   production: {
-    API_BASE_URL: '/api', // Use /api prefix with redirects to functions
-    WS_URL: 'wss://cryptocall.netlify.app', // WebSocket not available in functions, will fallback
+    API_BASE_URL: '/.netlify/functions', // Direct access to Netlify Functions
+    WS_URL: 'wss://secure-comms-aes512.netlify.app', // WebSocket not available in functions, will fallback
     USE_HTTPS: true,
   },
   test: {
@@ -23,17 +23,17 @@ const config: Record<string, Config> = {
   }
 };
 
-// Force development mode when running locally (client-side detection)
+// Force production mode when not running locally
 const isLocalhost = typeof window !== 'undefined' && 
   (window.location.hostname === 'localhost' || 
    window.location.hostname === '127.0.0.1' ||
    window.location.port === '3000' ||
    window.location.port === '3100');
 
-// For local development, always use development config even in production build
+// Use production config when deployed to Netlify
 const environment = isLocalhost 
   ? 'development' 
-  : (process.env.REACT_APP_NODE_ENV || process.env.NODE_ENV || 'production');
+  : 'production';
 
 // Additional debug logging
 console.log('🔧 Environment detection:', {
