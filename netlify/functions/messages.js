@@ -1,12 +1,18 @@
-// Simple message handling function
-let messages = [];
-let messageIdCounter = 1000;
+// Messages function for Netlify
+const crypto = require('crypto');
+
+// In-memory storage for messages
+global.messages = global.messages || [];
+
+const generateId = () => {
+  return crypto.randomBytes(16).toString('hex');
+};
 
 exports.handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json'
   };
@@ -17,50 +23,54 @@ exports.handler = async (event, context) => {
 
   try {
     if (event.httpMethod === 'GET') {
-      // Return all messages
+      // Get messages
+      const { conversationId } = event.queryStringParameters || {};
+      
+      let filteredMessages = global.messages;
+      
+      if (conversationId) {
+        filteredMessages = global.messages.filter(msg => 
+          msg.conversationId === conversationId
+        );
+      }
+
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ 
-          messages: messages.slice(-50) // Return last 50 messages
-        })
+        body: JSON.stringify(filteredMessages.sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        ))
       };
     }
 
     if (event.httpMethod === 'POST') {
-      const { message, senderId, recipientId } = JSON.parse(event.body);
+      // Send message
+      const { senderId, recipientId, content, encrypted } = JSON.parse(event.body || '{}');
 
-      if (!message || !senderId) {
+      if (!senderId || !recipientId || !content) {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: 'Message and senderId required' })
+          body: JSON.stringify({ error: 'senderId, recipientId, and content are required' })
         };
       }
 
-      // Create new message
-      const newMessage = {
-        id: (++messageIdCounter).toString(),
-        content: message,
+      const message = {
+        id: generateId(),
         senderId,
-        recipientId: recipientId || 'all',
-        timestamp: new Date().toISOString()
+        recipientId,
+        content,
+        timestamp: new Date().toISOString(),
+        encrypted: encrypted || false,
+        conversationId: [senderId, recipientId].sort().join('_')
       };
 
-      messages.push(newMessage);
-
-      // Keep only last 100 messages in memory
-      if (messages.length > 100) {
-        messages = messages.slice(-100);
-      }
+      global.messages.push(message);
 
       return {
         statusCode: 201,
         headers,
-        body: JSON.stringify({ 
-          message: 'Message sent successfully',
-          messageId: newMessage.id
-        })
+        body: JSON.stringify(message)
       };
     }
 

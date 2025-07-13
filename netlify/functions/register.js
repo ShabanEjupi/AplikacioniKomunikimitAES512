@@ -1,31 +1,42 @@
-// Simple user registration function
+// Registration function for Netlify
 const crypto = require('crypto');
 
-// In-memory user storage for demo
-let users = new Map();
-let userIdCounter = 1000;
+// In-memory user storage (shared across functions via global scope)
+global.users = global.users || new Map();
 
-// Initialize with test users
 const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-users.set('testuser', { 
-  username: 'testuser', 
-  password: hashPassword('testpass123'), 
-  userId: '1001' 
-});
-users.set('alice', { 
-  username: 'alice', 
-  password: hashPassword('alice123'), 
-  userId: '1002' 
-});
+// Initialize with test users if not already done
+if (global.users.size === 0) {
+  global.users.set('testuser', { 
+    username: 'testuser', 
+    password: hashPassword('testpass123'), 
+    userId: '1001' 
+  });
+  global.users.set('alice', { 
+    username: 'alice', 
+    password: hashPassword('alice123'), 
+    userId: '1002' 
+  });
+  global.users.set('bob', { 
+    username: 'bob', 
+    password: hashPassword('bob123'), 
+    userId: '1003' 
+  });
+  global.users.set('charlie', { 
+    username: 'charlie', 
+    password: hashPassword('charlie123'), 
+    userId: '1004' 
+  });
+}
 
 exports.handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json'
   };
@@ -43,40 +54,79 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { username, password } = JSON.parse(event.body);
+    const { username, password } = JSON.parse(event.body || '{}');
 
     if (!username || !password) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Username and password required' })
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Username and password are required' 
+        })
       };
     }
 
-    if (users.has(username)) {
+    // Check if username is too short
+    if (username.length < 3) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Username must be at least 3 characters long' 
+        })
+      };
+    }
+
+    // Check if password is too short
+    if (password.length < 6) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Password must be at least 6 characters long' 
+        })
+      };
+    }
+
+    // Check if user already exists
+    if (global.users.has(username)) {
       return {
         statusCode: 409,
         headers,
-        body: JSON.stringify({ error: 'User already exists' })
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Username already exists' 
+        })
       };
     }
 
-    // Create new user
-    const hashedPassword = hashPassword(password);
-    const userId = (++userIdCounter).toString();
-    
-    users.set(username, {
-      username,
-      password: hashedPassword,
-      userId
-    });
+    // Generate new user ID
+    const userId = (1000 + global.users.size + 1).toString();
 
+    // Create new user
+    const newUser = {
+      username: username,
+      password: hashPassword(password),
+      userId: userId
+    };
+
+    // Store user
+    global.users.set(username, newUser);
+
+    // Registration successful
     return {
       statusCode: 201,
       headers,
       body: JSON.stringify({ 
-        message: 'User registered successfully',
-        userId 
+        success: true, 
+        user: {
+          username: newUser.username,
+          userId: newUser.userId
+        },
+        message: 'Registration successful' 
       })
     };
 
@@ -85,7 +135,10 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ 
+        success: false, 
+        message: 'Internal server error' 
+      })
     };
   }
 };

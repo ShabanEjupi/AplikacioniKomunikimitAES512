@@ -1,30 +1,42 @@
-// Simple user login function
+// Login function for Netlify
 const crypto = require('crypto');
 
-// In-memory user storage (same as register.js)
-let users = new Map();
+// In-memory user storage (shared across functions via global scope)
+global.users = global.users || new Map();
 
 const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-// Initialize with test users
-users.set('testuser', { 
-  username: 'testuser', 
-  password: hashPassword('testpass123'), 
-  userId: '1001' 
-});
-users.set('alice', { 
-  username: 'alice', 
-  password: hashPassword('alice123'), 
-  userId: '1002' 
-});
+// Initialize with test users if not already done
+if (global.users.size === 0) {
+  global.users.set('testuser', { 
+    username: 'testuser', 
+    password: hashPassword('testpass123'), 
+    userId: '1001' 
+  });
+  global.users.set('alice', { 
+    username: 'alice', 
+    password: hashPassword('alice123'), 
+    userId: '1002' 
+  });
+  global.users.set('bob', { 
+    username: 'bob', 
+    password: hashPassword('bob123'), 
+    userId: '1003' 
+  });
+  global.users.set('charlie', { 
+    username: 'charlie', 
+    password: hashPassword('charlie123'), 
+    userId: '1004' 
+  });
+}
 
 exports.handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json'
   };
@@ -42,41 +54,61 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { username, password } = JSON.parse(event.body);
+    const { username, password } = JSON.parse(event.body || '{}');
 
     if (!username || !password) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Username and password required' })
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Username and password are required' 
+        })
       };
     }
 
-    const user = users.get(username);
+    // Find user
+    const user = global.users.get(username);
+    
     if (!user) {
       return {
         statusCode: 401,
         headers,
-        body: JSON.stringify({ error: 'User not found' })
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Invalid username or password' 
+        })
       };
     }
 
+    // Verify password
     const hashedPassword = hashPassword(password);
     if (user.password !== hashedPassword) {
       return {
         statusCode: 401,
         headers,
-        body: JSON.stringify({ error: 'Invalid password' })
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Invalid username or password' 
+        })
       };
     }
 
+    // Generate a simple token (in production, use JWT)
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Login successful
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ 
-        message: 'Login successful',
-        username: user.username,
-        userId: user.userId
+        success: true, 
+        user: {
+          username: user.username,
+          userId: user.userId
+        },
+        token: token,
+        message: 'Login successful' 
       })
     };
 
@@ -85,7 +117,10 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ 
+        success: false, 
+        message: 'Internal server error' 
+      })
     };
   }
 };
