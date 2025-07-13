@@ -491,8 +491,17 @@ export const isAuthenticated = (): boolean => {
 };
 
 export const logout = (): void => {
+  // Clear localStorage
   localStorage.removeItem('authToken');
   localStorage.removeItem('currentUser');
+  
+  // Clear SessionManager
+  try {
+    const SessionManager = require('../auth/session').default;
+    SessionManager.clearSession();
+  } catch (error) {
+    console.error('Error clearing session:', error);
+  }
 };
 
 // Aliases for better compatibility

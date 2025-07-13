@@ -58,17 +58,26 @@ const Login: React.FC = () => {
             const response = await loginUser({ username, password });
             console.log('Përgjigja e hyrjes:', response);
             
-            if (response.token) {
+            if (response.token && response.user) {
+                // Store both token and user data properly
                 session.setAuthToken(response.token);
+                session.setCurrentUser(response.user);
+                
+                // Also store in localStorage for API compatibility
+                localStorage.setItem('authToken', response.token);
+                localStorage.setItem('currentUser', JSON.stringify(response.user));
+                
                 setSuccess(true);
                 setError('');
+                
+                console.log('✅ Authentication complete, navigating to chat...');
                 
                 // Kalo tek biseda pas hyrjes së suksesshme
                 setTimeout(() => {
                     navigate('/chat');
                 }, 1500);
             } else {
-                setError('Hyrja dështoi: Nuk u mor token nga serveri');
+                setError('Hyrja dështoi: Nuk u mor token ose informacion përdoruesi nga serveri');
             }
         } catch (err: any) {
             console.error('Gabim në hyrje:', err);
@@ -112,10 +121,18 @@ const Login: React.FC = () => {
                 setTimeout(async () => {
                     try {
                         const loginResponse = await loginUser({ username, password });
-                        if (loginResponse.token) {
+                        if (loginResponse.token && loginResponse.user) {
                             const session = SessionManager;
                             session.setAuthToken(loginResponse.token);
+                            session.setCurrentUser(loginResponse.user);
+                            
+                            // Also store in localStorage for API compatibility
+                            localStorage.setItem('authToken', loginResponse.token);
+                            localStorage.setItem('currentUser', JSON.stringify(loginResponse.user));
+                            
                             navigate('/chat');
+                        } else {
+                            setError('Registration successful, but auto-login failed: Missing token or user data. Please login manually.');
                         }
                     } catch (error) {
                         setError('Registration successful, but auto-login failed. Please login manually.');
