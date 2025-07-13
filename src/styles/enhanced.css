@@ -277,7 +277,7 @@ body {
 
 .message-content {
   background: #007bff;
-  color: white;
+  color: #ffffff;
   padding: 12px 16px;
   border-radius: 18px;
   position: relative;
@@ -286,8 +286,9 @@ body {
 }
 
 .message-received .message-content {
-  background: #e9ecef;
-  color: #333;
+  background: #f8f9fa;
+  color: #212529;
+  border: 1px solid #dee2e6;
 }
 
 .message-time {
@@ -309,12 +310,17 @@ body {
 
 /* Enhanced Message Actions */
 .message-actions {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
-  opacity: 0;
+  opacity: 1 !important; /* Always visible for debugging */
   transition: opacity 0.2s ease;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .message:hover .message-actions {
@@ -323,55 +329,142 @@ body {
 
 .reaction-buttons {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
+  margin-bottom: 6px;
 }
 
 .reaction-btn {
-  background: none;
-  border: 1px solid #e0e0e0;
+  background: #fff8dc !important;
+  border: 1px solid #ddd !important;
+  color: #333 !important;
   border-radius: 12px;
   padding: 4px 8px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .reaction-btn:hover {
-  background: #f0f0f0;
+  background: #ffeaa7 !important;
+  border-color: #fdcb6e !important;
   transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
 .action-btn {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
+  background: #e3f2fd !important;
+  border: 1px solid #90caf9 !important;
+  color: #0d47a1 !important;
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 6px 12px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: nowrap;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.action-btn:hover {
+  background: #bbdefb !important;
+  border-color: #42a5f5 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.reply-btn {
+  background: #e8f5e8 !important;
+  border: 1px solid #81c784 !important;
+  color: #2e7d32 !important;
 }
 
 .reply-btn:hover {
-  background: #e3f2fd;
-  border-color: #2196f3;
+  background: #c8e6c9 !important;
+  border-color: #4caf50 !important;
+}
+
+.edit-btn {
+  background: #fff3e0 !important;
+  border: 1px solid #ffb74d !important;
+  color: #e65100 !important;
 }
 
 .edit-btn:hover {
-  background: #fff3e0;
-  border-color: #ff9800;
+  background: #ffe0b2 !important;
+  border-color: #ff9800 !important;
+}
+
+.delete-btn {
+  background: #ffebee !important;
+  border: 1px solid #ef9a9a !important;
+  color: #c62828 !important;
 }
 
 .delete-btn:hover {
-  background: #ffebee;
-  border-color: #f44336;
-  color: #f44336;
+  background: #ffcdd2 !important;
+  border-color: #e57373 !important;
 }
 
 .owner-actions {
+  display: flex !important;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+/* Message footer improvements */
+.message-footer {
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Ensure text in messages is properly contrasted */
+.message-text {
+  display: block;
+  line-height: 1.4;
+  color: inherit;
+}
+
+.message-sent .message-text {
+  color: #ffffff !important;
+}
+
+.message-received .message-text {
+  color: #212529 !important;
+}
+
+/* Reaction display improvements */
+.message-reactions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.reaction {
+  background: rgba(255, 193, 7, 0.2);
+  border: 1px solid rgba(255, 193, 7, 0.5);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.reaction:hover {
+  background: rgba(255, 193, 7, 0.4);
+  transform: scale(1.1);
 }
 
 /* Enhanced Reply Context */

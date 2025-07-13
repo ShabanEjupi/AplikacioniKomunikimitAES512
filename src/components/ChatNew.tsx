@@ -269,12 +269,15 @@ const ChatNew: React.FC = () => {
   const handleEditMessage = async (messageId: string, content: string) => {
     if (!currentUser) return;
     
+    console.log('✏️ Editing message:', { messageId, content, userId: currentUser.userId });
+    
     try {
       const updatedMessage = await editMessage(messageId, content, currentUser.userId);
       setMessages(prev => prev.map(msg => msg.id === messageId ? updatedMessage : msg));
       setEditingMessage(null);
+      console.log('✅ Message edited successfully');
     } catch (err: any) {
-      console.error('Failed to edit message:', err);
+      console.error('❌ Failed to edit message:', err);
       setError('Failed to edit message: ' + err.message);
     }
   };
@@ -282,11 +285,14 @@ const ChatNew: React.FC = () => {
   const handleDeleteMessage = async (messageId: string) => {
     if (!currentUser) return;
     
+    console.log('🗑️ Deleting message:', { messageId, userId: currentUser.userId });
+    
     try {
       await deleteMessage(messageId, currentUser.userId);
       setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      console.log('✅ Message deleted successfully');
     } catch (err: any) {
-      console.error('Failed to delete message:', err);
+      console.error('❌ Failed to delete message:', err);
       setError('Failed to delete message: ' + err.message);
     }
   };
@@ -294,9 +300,12 @@ const ChatNew: React.FC = () => {
   const handleReaction = async (messageId: string, emoji: string) => {
     if (!currentUser) return;
     
+    console.log('😊 Adding reaction:', { messageId, emoji, userId: currentUser.userId });
+    
     try {
       const updatedMessage = await reactToMessage(messageId, emoji, currentUser.userId);
       setMessages(prev => prev.map(msg => msg.id === messageId ? updatedMessage : msg));
+      console.log('✅ Reaction added successfully');
     } catch (err: any) {
       console.error('Failed to react to message:', err);
       setError('Failed to react to message: ' + err.message);
@@ -322,6 +331,14 @@ const ChatNew: React.FC = () => {
   const renderMessage = (message: Message) => {
     const isOwn = message.senderId === currentUser?.userId;
     const isEditing = editingMessage?.id === message.id;
+
+    console.log('🎨 Rendering message:', { 
+      messageId: message.id, 
+      isOwn, 
+      isEditing, 
+      currentUser: currentUser?.userId,
+      messageSender: message.senderId 
+    });
 
     return (
       <div 
