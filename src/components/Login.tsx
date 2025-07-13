@@ -366,38 +366,77 @@ const Login: React.FC = () => {
                     )}
                 </form>
                 
-                {registrationStatus?.hasDefaultUsers && (
-                    <div style={{ 
-                        marginTop: '30px', 
-                        padding: '20px', 
-                        backgroundColor: '#f8fafc', 
+                {/* Test Users Information Panel */}
+                {registrationStatus && registrationStatus.availableUsers && registrationStatus.availableUsers.length > 0 && (
+                    <div style={{
+                        marginTop: '24px',
+                        padding: '16px',
+                        backgroundColor: '#f8fafc',
+                        border: '1px solid #e2e8f0',
                         borderRadius: '12px',
-                        border: '1px solid #e2e8f0'
+                        fontSize: '13px'
                     }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
                             gap: '8px',
                             marginBottom: '12px',
-                            fontSize: '14px',
-                            fontWeight: '500',
+                            color: '#4f46e5',
+                            fontWeight: '600'
+                        }}>
+                            <span>🧪</span>
+                            Test Accounts Available
+                        </div>
+                        <div style={{
+                            display: 'grid',
+                            gap: '8px',
+                            fontSize: '12px',
                             color: '#64748b'
                         }}>
-                            <span>🔧</span>
-                            Kredencialet për testim
+                            <div style={{ display: 'flex', gap: '16px', fontWeight: '500', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                                <span style={{ minWidth: '80px' }}>Username</span>
+                                <span style={{ minWidth: '80px' }}>Password</span>
+                                <span>Role</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <span style={{ minWidth: '80px', color: '#059669', fontFamily: 'monospace' }}>testuser</span>
+                                <span style={{ minWidth: '80px', color: '#dc2626', fontFamily: 'monospace' }}>testpass123</span>
+                                <span style={{ color: '#6b7280' }}>Default User</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <span style={{ minWidth: '80px', color: '#059669', fontFamily: 'monospace' }}>alice</span>
+                                <span style={{ minWidth: '80px', color: '#dc2626', fontFamily: 'monospace' }}>alice123</span>
+                                <span style={{ color: '#6b7280' }}>Test User</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <span style={{ minWidth: '80px', color: '#059669', fontFamily: 'monospace' }}>bob</span>
+                                <span style={{ minWidth: '80px', color: '#dc2626', fontFamily: 'monospace' }}>bob123</span>
+                                <span style={{ color: '#6b7280' }}>Test User</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <span style={{ minWidth: '80px', color: '#059669', fontFamily: 'monospace' }}>admin</span>
+                                <span style={{ minWidth: '80px', color: '#dc2626', fontFamily: 'monospace' }}>admin123</span>
+                                <span style={{ color: '#7c3aed' }}>Admin User</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <span style={{ minWidth: '80px', color: '#059669', fontFamily: 'monospace' }}>demo</span>
+                                <span style={{ minWidth: '80px', color: '#dc2626', fontFamily: 'monospace' }}>demo123</span>
+                                <span style={{ color: '#ea580c' }}>Demo User</span>
+                            </div>
                         </div>
-                        <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
-                            <div><strong>Emri i përdoruesit:</strong> testuser</div>
-                            <div><strong>Fjalëkalimi:</strong> testpass123</div>
-                            {registrationStatus?.availableUsers && (
-                                <div style={{ marginTop: '8px' }}>
-                                    <strong>Përdorues të disponueshëm:</strong> {registrationStatus.availableUsers.join(', ')}
-                                </div>
-                            )}
+                        <div style={{
+                            marginTop: '12px',
+                            padding: '8px',
+                            backgroundColor: '#dbeafe',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            color: '#1e40af'
+                        }}>
+                            💡 <strong>Tip:</strong> Copy and paste any username/password above to test the secure communication system
                         </div>
                     </div>
                 )}
-                
+
                 {!registrationStatus?.registrationEnabled && !registrationStatus?.hasDefaultUsers && (
                     <div style={{ 
                         marginTop: '30px', 
