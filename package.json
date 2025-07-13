@@ -1,28 +1,33 @@
 {
   "name": "crypto-512-root",
   "version": "1.0.0",
-  "description": "Crypto 512 - Secure Communication App with Netlify Functions",
+  "description": "Crypto 512 - Aplikacioni i komunikimit të sigurt me ASH-512 hash dhe koordinata gjeometrike",
   "private": true,
   "workspaces": [
     "client"
   ],
   "scripts": {
     "build": "cd client && npm install --legacy-peer-deps && npm run build",
-    "start": "cd client && npm start",
-    "dev": "cd client && npm start",
+    "build:client": "cd client && npm install --legacy-peer-deps && npm run build",
     "install:client": "cd client && npm install --legacy-peer-deps",
-    "clean": "cd client && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps"
+    "start": "cd client && npm start",
+    "start:client": "cd client && npm start",
+    "dev": "netlify dev",
+    "deploy": "npm run build && netlify deploy --prod"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
   },
   "engines": {
-    "node": "18.x",
+    "node": ">=18.0.0",
     "npm": ">=9.0.0"
   },
   "keywords": [
     "secure",
     "communication",
-    "netlify",
-    "react",
-    "typescript"
+    "authentication",
+    "encryption"
   ],
   "author": "Shaban Ejupi",
   "license": "MIT"

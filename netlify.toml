@@ -1,22 +1,21 @@
-# Netlify Configuration for Crypto 512 Secure Communication App
 [build]
   base = "client"
   publish = "client/build"
   command = "npm install --legacy-peer-deps && npm run build"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "18.20.8"
   NPM_VERSION = "9"
   CI = "false"
   SKIP_PREFLIGHT_CHECK = "true"
   NODE_OPTIONS = "--max-old-space-size=4096"
   GENERATE_SOURCEMAP = "false"
   NPM_CONFIG_LEGACY_PEER_DEPS = "true"
+  NPM_CONFIG_FORCE = "false"
 
 [functions]
   directory = "netlify/functions"
 
-# API redirects
 [[redirects]]
   from = "/api/health"
   to = "/.netlify/functions/health-check"
