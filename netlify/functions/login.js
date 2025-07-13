@@ -33,6 +33,9 @@ if (global.users.size === 0) {
 }
 
 exports.handler = async (event, context) => {
+  console.log('🔐 Login function called:', event.httpMethod, event.path);
+  console.log('👥 Available users count:', global.users.size);
+  
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -42,10 +45,12 @@ exports.handler = async (event, context) => {
   };
 
   if (event.httpMethod === 'OPTIONS') {
+    console.log('✅ Handling OPTIONS request');
     return { statusCode: 200, headers, body: '' };
   }
 
   if (event.httpMethod !== 'POST') {
+    console.log('❌ Invalid method:', event.httpMethod);
     return {
       statusCode: 405,
       headers,
@@ -55,8 +60,10 @@ exports.handler = async (event, context) => {
 
   try {
     const { username, password } = JSON.parse(event.body || '{}');
+    console.log('🔍 Login attempt for username:', username);
 
     if (!username || !password) {
+      console.log('❌ Missing credentials');
       return {
         statusCode: 400,
         headers,
@@ -71,6 +78,7 @@ exports.handler = async (event, context) => {
     const user = global.users.get(username);
     
     if (!user) {
+      console.log('❌ User not found:', username);
       return {
         statusCode: 401,
         headers,
@@ -84,6 +92,7 @@ exports.handler = async (event, context) => {
     // Verify password
     const hashedPassword = hashPassword(password);
     if (user.password !== hashedPassword) {
+      console.log('❌ Invalid password for user:', username);
       return {
         statusCode: 401,
         headers,
@@ -94,8 +103,11 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Generate a simple token (in production, use JWT)
-    const token = crypto.randomBytes(32).toString('hex');
+    // Generate a Base64 token as per the app's auth pattern (userId:username)
+    const tokenData = `${user.userId}:${user.username}`;
+    const token = Buffer.from(tokenData).toString('base64');
+
+    console.log('✅ Login successful for user:', user.username, 'with userId:', user.userId);
 
     // Login successful
     return {
