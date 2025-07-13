@@ -114,4 +114,4 @@ const headers = {
 - Cold start resets all in-memory data
 - CRACO config allows imports outside src/ directory
 
-When adding new features, maintain the in-memory synchronization pattern and follow the established authentication/CORS patterns.
+When adding new features, maintain the in-memory synchronization pattern and follow the established authentication/CORS patterns, also commit changes to git always.
