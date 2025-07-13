@@ -3,20 +3,49 @@
   "version": "1.0.0",
   "description": "Crypto 512 - Aplikacioni i komunikimit të sigurt me ASH-512 hash dhe koordinata gjeometrike",
   "private": true,
-  "workspaces": [
-    "client"
-  ],
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.0",
+    "react-scripts": "5.0.0",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
+  },
   "scripts": {
-    "build": "cd client && npm install --legacy-peer-deps && npm run build",
-    "build:client": "cd client && npm install --legacy-peer-deps && npm run build",
-    "install:client": "cd client && npm install --legacy-peer-deps",
-    "start": "cd client && npm start",
-    "start:client": "cd client && npm start",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
     "dev": "netlify dev",
     "deploy": "npm run build && netlify deploy --prod"
   },
-  "dependencies": {},
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "devDependencies": {
+    "ajv": "^8.17.1",
     "netlify-cli": "^17.0.0"
   },
   "engines": {

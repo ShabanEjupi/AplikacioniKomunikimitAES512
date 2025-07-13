@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Loading Debug - Crypto 512</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section {
+            background-color: #2d2d2d;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .warning { border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 User Loading Debug Tool</h1>
+        <p>This tool helps debug user loading issues in Crypto 512</p>
+
+        <div class="section">
+            <h3>1. API Connectivity Test</h3>
+            <button onclick="testApiConnectivity()">Test API Connection</button>
+            <div id="api-result" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h3>2. Users API Test</h3>
+            <button onclick="testUsersAPI()">Test Users Endpoint</button>
+            <div id="users-result" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h3>3. Login Test</h3>
+            <button onclick="testLogin()">Test Login (testuser)</button>
+            <div id="login-result" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h3>4. Authenticated Users Test</h3>
+            <button onclick="testAuthenticatedUsers()">Test Users with Auth</button>
+            <div id="auth-users-result" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h3>5. Environment Info</h3>
+            <button onclick="showEnvironmentInfo()">Show Environment</button>
+            <div id="env-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                const data = await response.json();
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    data: null
+                };
+            }
+        }
+
+        async function testApiConnectivity() {
+            const result = document.getElementById('api-result');
+            result.textContent = 'Testing API connectivity...';
+            result.className = 'result warning';
+
+            const response = await makeRequest('/api/health-check');
+            
+            if (response.success) {
+                result.textContent = `✅ API Connected Successfully!
+Status: ${response.status}
+Response: ${JSON.stringify(response.data, null, 2)}`;
+                result.className = 'result success';
+            } else {
+                result.textContent = `❌ API Connection Failed!
+Error: ${response.error || 'Unknown error'}
+Status: ${response.status || 'No status'}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testUsersAPI() {
+            const result = document.getElementById('users-result');
+            result.textContent = 'Testing users endpoint...';
+            result.className = 'result warning';
+
+            const response = await makeRequest('/api/users');
+            
+            if (response.success) {
+                const users = response.data;
+                result.textContent = `✅ Users API Working!
+Status: ${response.status}
+Users Found: ${Array.isArray(users) ? users.length : 'Unknown format'}
+Data: ${JSON.stringify(users, null, 2)}`;
+                result.className = 'result success';
+            } else {
+                result.textContent = `❌ Users API Failed!
+Error: ${response.error || 'Unknown error'}
+Status: ${response.status || 'No status'}
+Data: ${JSON.stringify(response.data, null, 2)}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            result.textContent = 'Testing login...';
+            result.className = 'result warning';
+
+            const response = await makeRequest('/api/login', {
+                method: 'POST',
+                body: JSON.stringify({
+                    username: 'testuser',
+                    password: 'testpass123'
+                })
+            });
+            
+            if (response.success) {
+                authToken = response.data.token;
+                result.textContent = `✅ Login Successful!
+Status: ${response.status}
+Token: ${response.data.token ? response.data.token.substring(0, 20) + '...' : 'None'}
+User: ${response.data.username}
+UserID: ${response.data.userId}`;
+                result.className = 'result success';
+            } else {
+                result.textContent = `❌ Login Failed!
+Error: ${response.error || 'Unknown error'}
+Status: ${response.status || 'No status'}
+Data: ${JSON.stringify(response.data, null, 2)}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testAuthenticatedUsers() {
+            const result = document.getElementById('auth-users-result');
+            
+            if (!authToken) {
+                result.textContent = '⚠️ Please login first before testing authenticated users';
+                result.className = 'result warning';
+                return;
+            }
+
+            result.textContent = 'Testing authenticated users endpoint...';
+            result.className = 'result warning';
+
+            const response = await makeRequest('/api/users');
+            
+            if (response.success) {
+                const users = response.data;
+                result.textContent = `✅ Authenticated Users API Working!
+Status: ${response.status}
+Auth Token: ${authToken ? 'Present' : 'Missing'}
+Users Found: ${Array.isArray(users) ? users.length : 'Unknown format'}
+Data: ${JSON.stringify(users, null, 2)}`;
+                result.className = 'result success';
+            } else {
+                result.textContent = `❌ Authenticated Users API Failed!
+Error: ${response.error || 'Unknown error'}
+Status: ${response.status || 'No status'}
+Auth Token: ${authToken ? 'Present' : 'Missing'}
+Data: ${JSON.stringify(response.data, null, 2)}`;
+                result.className = 'result error';
+            }
+        }
+
+        function showEnvironmentInfo() {
+            const result = document.getElementById('env-result');
+            
+            const envInfo = {
+                hostname: window.location.hostname,
+                protocol: window.location.protocol,
+                port: window.location.port,
+                pathname: window.location.pathname,
+                search: window.location.search,
+                hash: window.location.hash,
+                origin: window.location.origin,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+            };
+
+            result.textContent = `🔧 Environment Information:
+${JSON.stringify(envInfo, null, 2)}`;
+            result.className = 'result success';
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            console.log('🔍 User Loading Debug Tool Loaded');
+            showEnvironmentInfo();
+        });
+    </script>
+</body>
+</html>

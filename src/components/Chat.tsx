@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   fetchUsers, 
@@ -9,6 +9,7 @@ import {
   User,
   Message 
 } from '../api/index';
+import CallControls from './CallControls';
 import '../styles/global.css';
 
 const Chat: React.FC = () => {
@@ -22,31 +23,16 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    setCurrentUser(user);
-    loadUsers();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (selectedUser) {
-      loadMessages();
-    }
-  }, [selectedUser]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const handleCallStart = (type: 'voice' | 'video') => {
+    console.log(`Starting ${type} call with ${selectedUser?.username}`);
+    // You can add additional call logic here
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setIsLoading(true);
       const fetchedUsers = await fetchUsers();
@@ -60,9 +46,9 @@ const Chat: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser?.username]);
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     if (!selectedUser || !currentUser) return;
     
     try {
@@ -81,7 +67,27 @@ const Chat: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedUser, currentUser]);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    setCurrentUser(user);
+    loadUsers();
+  }, [navigate, loadUsers]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      loadMessages();
+    }
+  }, [selectedUser, loadMessages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,9 +209,16 @@ const Chat: React.FC = () => {
                     <span className="encryption-status">🔒 AES-512 Encrypted</span>
                   </div>
                 </div>
-                <button onClick={loadMessages} disabled={isLoading} className="refresh-btn">
-                  🔄
-                </button>
+                <div className="chat-header-controls">
+                  <CallControls
+                    selectedUser={selectedUser}
+                    currentUser={currentUser}
+                    onCallStart={handleCallStart}
+                  />
+                  <button onClick={loadMessages} disabled={isLoading} className="refresh-btn">
+                    🔄
+                  </button>
+                </div>
               </div>
 
               {/* Messages */}
