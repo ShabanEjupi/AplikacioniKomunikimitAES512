@@ -10,6 +10,16 @@ const getCallStore = () => {
       sessionId: crypto.randomBytes(8).toString('hex')
     };
   }
+  
+  // Cleanup old calls (older than 1 hour)
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+  for (const [callId, call] of global.callStore.activeCalls.entries()) {
+    if (now - call.timestamp > oneHour) {
+      global.callStore.activeCalls.delete(callId);
+    }
+  }
+  
   return global.callStore;
 };
 
@@ -91,6 +101,7 @@ exports.handler = async (event, context) => {
         if (callToAccept) {
           callToAccept.status = 'connected';
           callToAccept.connectedAt = new Date().toISOString();
+          callToAccept.connectedTimestamp = Date.now(); // Add timestamp for accurate duration sync
           store.activeCalls.set(callId, callToAccept);
         }
 
@@ -128,13 +139,41 @@ exports.handler = async (event, context) => {
           };
         }
 
-        store.activeCalls.delete(callId);
+        const callToEnd = store.activeCalls.get(callId);
+        if (callToEnd) {
+          callToEnd.status = 'ended';
+          callToEnd.endedAt = new Date().toISOString();
+          // Keep the call data briefly for the other party to see
+          setTimeout(() => {
+            store.activeCalls.delete(callId);
+          }, 5000); // Delete after 5 seconds
+        } else {
+          store.activeCalls.delete(callId);
+        }
         store.lastAccess = Date.now();
 
         return {
           statusCode: 200,
           headers,
           body: JSON.stringify({ success: true })
+        };
+
+      case 'check_call_ended':
+        if (!callId) {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: 'callId is required' })
+          };
+        }
+
+        const endedCall = store.activeCalls.get(callId);
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ 
+            ended: !endedCall || endedCall.status === 'ended'
+          })
         };
 
       default:

@@ -51,8 +51,6 @@ const CallControls: React.FC<CallControlsProps> = ({
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const callCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const callStatusCheckRef = useRef<NodeJS.Timeout | null>(null);
-  const peerConnection = useRef<RTCPeerConnection | null>(null);
 
   // Store active call in global memory for cross-user communication
   const storeCall = async (callData: CallData) => {
@@ -98,140 +96,6 @@ const CallControls: React.FC<CallControlsProps> = ({
     }
   }, [currentUser, callState.isActive]);
 
-  // Check call status during active call
-  const endCall = useCallback(async () => {
-    // Stop media streams
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      setLocalStream(null);
-    }
-
-    if (remoteStream) {
-      remoteStream.getTracks().forEach(track => track.stop());
-      setRemoteStream(null);
-    }
-
-    // Close WebRTC connection
-    if (peerConnection.current) {
-      peerConnection.current.close();
-      peerConnection.current = null;
-    }
-
-    // Clear duration interval
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
-    }
-
-    // Clear call status check interval
-    if (callStatusCheckRef.current) {
-      clearInterval(callStatusCheckRef.current);
-      callStatusCheckRef.current = null;
-    }
-
-    // End call on server
-    if (callState.callId) {
-      await endCallOnServer(callState.callId);
-    }
-
-    setCallState({
-      isActive: false,
-      type: null,
-      duration: 0,
-      isMuted: false,
-      isVideoOff: false,
-      isIncoming: false,
-      isConnecting: false
-    });
-  }, [localStream, remoteStream, callState.callId]);
-
-  const checkCallStatus = useCallback(async () => {
-    if (!callState.isActive || !callState.callId) return;
-    
-    try {
-      const response = await fetch('/api/call-management', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'check_call_status',
-          callId: callState.callId
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === 'ended') {
-          // Call was ended by other party
-          endCall();
-          alert('Call ended by the other party');
-        } else if (data.call && data.call.connectedAt && !callState.isConnecting) {
-          // Sync duration based on connection time
-          const connectedTime = new Date(data.call.connectedAt).getTime();
-          const currentTime = Date.now();
-          const actualDuration = Math.floor((currentTime - connectedTime) / 1000);
-          
-          setCallState(prev => ({
-            ...prev,
-            duration: actualDuration
-          }));
-        }
-      }
-    } catch (error) {
-      console.error('Failed to check call status:', error);
-    }
-  }, [callState.isActive, callState.callId, callState.isConnecting, endCall]);
-
-  // Setup WebRTC connection
-  const setupWebRTC = useCallback(async (stream: MediaStream, isInitiator: boolean = false) => {
-    try {
-      const pc = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
-      });
-
-      peerConnection.current = pc;
-
-      // Add local stream to peer connection
-      stream.getTracks().forEach(track => {
-        pc.addTrack(track, stream);
-      });
-
-      // Handle remote stream
-      pc.ontrack = (event) => {
-        const [remoteStream] = event.streams;
-        setRemoteStream(remoteStream);
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStream;
-        }
-      };
-
-      // Handle ICE candidates
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          // In a real implementation, send candidate to other peer
-          console.log('ICE candidate:', event.candidate);
-        }
-      };
-
-      if (isInitiator) {
-        // Create offer
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        // In a real implementation, send offer to other peer
-        console.log('Created offer:', offer);
-      }
-
-      return pc;
-    } catch (error) {
-      console.error('Failed to setup WebRTC:', error);
-      return null;
-    }
-  }, []);
-
   const endCallOnServer = async (callId: string) => {
     try {
       await fetch('/api/call-management', {
@@ -260,18 +124,6 @@ const CallControls: React.FC<CallControlsProps> = ({
       };
     }
   }, [currentUser, callState.isActive, checkForIncomingCalls]);
-
-  // Check call status during active calls every 3 seconds
-  useEffect(() => {
-    if (callState.isActive && callState.callId) {
-      callStatusCheckRef.current = setInterval(checkCallStatus, 3000);
-      return () => {
-        if (callStatusCheckRef.current) {
-          clearInterval(callStatusCheckRef.current);
-        }
-      };
-    }
-  }, [callState.isActive, callState.callId, checkCallStatus]);
 
   const startCall = async (type: 'voice' | 'video') => {
     if (!selectedUser || !currentUser) {
@@ -310,9 +162,6 @@ const CallControls: React.FC<CallControlsProps> = ({
         localVideoRef.current.srcObject = stream;
       }
 
-      // Setup WebRTC for actual audio/video communication
-      await setupWebRTC(stream, true);
-
       setCallState({
         isActive: true,
         type,
@@ -346,13 +195,11 @@ const CallControls: React.FC<CallControlsProps> = ({
               clearInterval(checkAcceptance);
               setCallState(prev => ({ ...prev, isConnecting: false }));
               
-              // Start duration counter synchronized with server time
-              const startTime = Date.now();
+              // Start duration counter
               durationIntervalRef.current = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 setCallState(prev => ({
                   ...prev,
-                  duration: elapsed
+                  duration: prev.duration + 1
                 }));
               }, 1000);
 
@@ -413,9 +260,6 @@ const CallControls: React.FC<CallControlsProps> = ({
         localVideoRef.current.srcObject = stream;
       }
 
-      // Setup WebRTC for actual audio/video communication
-      await setupWebRTC(stream, false);
-
       setCallState({
         isActive: true,
         type: incomingCall.type,
@@ -429,13 +273,11 @@ const CallControls: React.FC<CallControlsProps> = ({
 
       setIncomingCall(null);
 
-      // Start duration counter synchronized with server time
-      const startTime = Date.now();
+      // Start duration counter
       durationIntervalRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
         setCallState(prev => ({
           ...prev,
-          duration: elapsed
+          duration: prev.duration + 1
         }));
       }, 1000);
 
@@ -450,6 +292,40 @@ const CallControls: React.FC<CallControlsProps> = ({
 
     await endCallOnServer(incomingCall.callId);
     setIncomingCall(null);
+  };
+
+  const endCall = async () => {
+    // Stop media streams
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      setLocalStream(null);
+    }
+
+    if (remoteStream) {
+      remoteStream.getTracks().forEach(track => track.stop());
+      setRemoteStream(null);
+    }
+
+    // Clear duration interval
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
+    }
+
+    // End call on server
+    if (callState.callId) {
+      await endCallOnServer(callState.callId);
+    }
+
+    setCallState({
+      isActive: false,
+      type: null,
+      duration: 0,
+      isMuted: false,
+      isVideoOff: false,
+      isIncoming: false,
+      isConnecting: false
+    });
   };
 
   const toggleMute = () => {
@@ -482,13 +358,10 @@ const CallControls: React.FC<CallControlsProps> = ({
   useEffect(() => {
     return () => {
       if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
+        localStream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
-      }
-      if (callCheckIntervalRef.current) {
-        clearInterval(callCheckIntervalRef.current);
       }
     };
   }, [localStream]);
@@ -496,77 +369,88 @@ const CallControls: React.FC<CallControlsProps> = ({
   // Incoming call notification
   if (incomingCall) {
     return (
-      <div className="incoming-call-notification">
+      <div className="incoming-call">
         <div className="incoming-call-content">
           <h3>📞 Incoming {incomingCall.type} call</h3>
           <p>From: {incomingCall.callerName}</p>
           <div className="incoming-call-buttons">
-            <button onClick={acceptCall} className="accept-call-btn">
+            <button
+              onClick={acceptCall}
+              className="accept-btn"
+              title="Accept call"
+            >
               ✅ Accept
             </button>
-            <button onClick={declineCall} className="decline-call-btn">
+            <button
+              onClick={declineCall}
+              className="decline-btn"
+              title="Decline call"
+            >
               ❌ Decline
             </button>
           </div>
         </div>
 
         <style>{`
-          .incoming-call-notification {
+          .incoming-call {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            z-index: 2000;
+            background: #2a2a2a;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 1001;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+          }
+
+          .incoming-call-content {
             text-align: center;
-            border: 3px solid #007bff;
           }
 
-          .incoming-call-content h3 {
-            margin-bottom: 10px;
-            color: #333;
+          .incoming-call h3 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
           }
 
-          .incoming-call-content p {
-            margin-bottom: 20px;
-            color: #666;
+          .incoming-call p {
+            margin: 0 0 20px 0;
             font-size: 16px;
+            color: #ccc;
           }
 
           .incoming-call-buttons {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
           }
 
-          .accept-call-btn, .decline-call-btn {
-            padding: 12px 24px;
+          .accept-btn, .decline-btn {
+            padding: 10px 20px;
             border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: bold;
           }
 
-          .accept-call-btn {
+          .accept-btn {
             background: #28a745;
             color: white;
           }
 
-          .accept-call-btn:hover {
+          .accept-btn:hover {
             background: #218838;
           }
 
-          .decline-call-btn {
+          .decline-btn {
             background: #dc3545;
             color: white;
           }
 
-          .decline-call-btn:hover {
+          .decline-btn:hover {
             background: #c82333;
           }
         `}</style>
@@ -574,20 +458,15 @@ const CallControls: React.FC<CallControlsProps> = ({
     );
   }
 
-  // Active call interface
   if (callState.isActive) {
     return (
       <div className="call-interface">
         <div className="call-header">
           <h3>
             {callState.type === 'video' ? '📹' : '📞'} 
-            {callState.isIncoming ? `Call from ${selectedUser?.username}` : selectedUser?.username}
+            {selectedUser?.username}
           </h3>
-          {callState.isConnecting ? (
-            <span className="call-status">Connecting...</span>
-          ) : (
-            <span className="call-duration">{formatDuration(callState.duration)}</span>
-          )}
+          <span className="call-duration">{formatDuration(callState.duration)}</span>
         </div>
 
         {callState.type === 'video' && (
@@ -661,7 +540,7 @@ const CallControls: React.FC<CallControlsProps> = ({
             font-size: 24px;
           }
 
-          .call-duration, .call-status {
+          .call-duration {
             font-size: 18px;
             color: #ccc;
           }
@@ -737,7 +616,6 @@ const CallControls: React.FC<CallControlsProps> = ({
     );
   }
 
-  // Call buttons
   return (
     <div className="call-buttons">
       <button

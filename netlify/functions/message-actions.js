@@ -26,6 +26,14 @@ exports.handler = async (event, context) => {
     return { statusCode: 200, headers, body: '' };
   }
 
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
   try {
     const store = getMessagesStore();
     const { messageId, action, userId, content, emoji, replyContent } = JSON.parse(event.body || '{}');

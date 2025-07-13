@@ -414,6 +414,9 @@ export const deleteMessage = async (messageId: string, userId: string): Promise<
 
 export const reactToMessage = async (messageId: string, emoji: string, userId: string): Promise<Message> => {
   try {
+    console.log('🔄 Reacting to message:', { messageId, emoji, userId });
+    console.log('🔄 API URL:', `${API_BASE}/message-actions`);
+    
     const response = await fetch(`${API_BASE}/message-actions`, {
       method: 'POST',
       headers: {
@@ -428,11 +431,18 @@ export const reactToMessage = async (messageId: string, emoji: string, userId: s
       }),
     });
 
+    console.log('🔄 Response status:', response.status);
+    console.log('🔄 Response headers:', response.headers);
+
     if (!response.ok) {
-      throw new Error(`Failed to react to message: ${response.status}`);
+      const errorText = await response.text();
+      console.error('🔄 Error response:', errorText);
+      throw new Error(`Failed to react to message: ${response.status} ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('🔄 Success response:', result);
+    return result;
   } catch (error: any) {
     console.error('React to message error:', error);
     throw error;

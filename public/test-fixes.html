@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call & Message Testing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📞 Call & Message System Test</h1>
+        <p>This page tests the fixed call and message reaction functionality.</p>
+        
+        <div class="test-section">
+            <h3>🔧 Call Management API Test</h3>
+            <button onclick="testCallManagement()">Test Call API</button>
+            <button onclick="testCallSync()">Test Call Duration Sync</button>
+            <div id="callResults" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>💬 Message Reactions API Test</h3>
+            <button onclick="testMessageReactions()">Test Message Reactions</button>
+            <button onclick="createTestMessage()">Create Test Message</button>
+            <div id="messageResults" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎵 WebRTC Audio Test</h3>
+            <button onclick="testMicrophone()">Test Microphone Access</button>
+            <button onclick="testWebRTC()">Test WebRTC Setup</button>
+            <div id="audioResults" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        async function testCallManagement() {
+            log('callResults', 'Testing call management API...', 'info');
+            
+            try {
+                // Test store call
+                const callData = {
+                    callId: 'test_' + Date.now(),
+                    callerId: 'user1',
+                    callerName: 'Test User 1',
+                    recipientId: 'user2',
+                    recipientName: 'Test User 2',
+                    type: 'voice',
+                    status: 'ringing',
+                    startTime: new Date().toISOString()
+                };
+
+                const storeResponse = await fetch('/api/call-management', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'store_call',
+                        callData: callData
+                    })
+                });
+
+                if (storeResponse.ok) {
+                    log('callResults', '✅ Call stored successfully', 'success');
+                    
+                    // Test check incoming calls
+                    const checkResponse = await fetch('/api/call-management', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'check_incoming_calls',
+                            userId: 'user2'
+                        })
+                    });
+
+                    if (checkResponse.ok) {
+                        const data = await checkResponse.json();
+                        log('callResults', `✅ Incoming call check: ${JSON.stringify(data)}`, 'success');
+                    } else {
+                        log('callResults', '❌ Failed to check incoming calls: ' + checkResponse.status, 'error');
+                    }
+
+                    // Test accept call
+                    const acceptResponse = await fetch('/api/call-management', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'accept_call',
+                            callId: callData.callId
+                        })
+                    });
+
+                    if (acceptResponse.ok) {
+                        log('callResults', '✅ Call accepted successfully', 'success');
+                    } else {
+                        log('callResults', '❌ Failed to accept call: ' + acceptResponse.status, 'error');
+                    }
+
+                    // Test end call
+                    const endResponse = await fetch('/api/call-management', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'end_call',
+                            callId: callData.callId
+                        })
+                    });
+
+                    if (endResponse.ok) {
+                        log('callResults', '✅ Call ended successfully', 'success');
+                    } else {
+                        log('callResults', '❌ Failed to end call: ' + endResponse.status, 'error');
+                    }
+
+                } else {
+                    log('callResults', '❌ Failed to store call: ' + storeResponse.status, 'error');
+                }
+
+            } catch (error) {
+                log('callResults', '❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function testCallSync() {
+            log('callResults', 'Testing call duration synchronization...', 'info');
+            
+            const callId = 'sync_test_' + Date.now();
+            const startTime = Date.now();
+            
+            try {
+                // Create and accept a call
+                const callData = {
+                    callId: callId,
+                    callerId: 'user1',
+                    callerName: 'Test User 1',
+                    recipientId: 'user2',
+                    recipientName: 'Test User 2',
+                    type: 'voice',
+                    status: 'ringing',
+                    startTime: new Date().toISOString()
+                };
+
+                await fetch('/api/call-management', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'store_call', callData: callData })
+                });
+
+                await fetch('/api/call-management', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'accept_call', callId: callId })
+                });
+
+                // Wait a few seconds and check status
+                setTimeout(async () => {
+                    const statusResponse = await fetch('/api/call-management', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'check_call_status', callId: callId })
+                    });
+
+                    if (statusResponse.ok) {
+                        const data = await statusResponse.json();
+                        if (data.call && data.call.connectedTimestamp) {
+                            const actualDuration = Math.floor((Date.now() - data.call.connectedTimestamp) / 1000);
+                            log('callResults', `✅ Duration sync working: ${actualDuration} seconds`, 'success');
+                        } else {
+                            log('callResults', `✅ Call status: ${JSON.stringify(data)}`, 'success');
+                        }
+                    }
+
+                    // Clean up
+                    await fetch('/api/call-management', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'end_call', callId: callId })
+                    });
+                }, 3000);
+
+            } catch (error) {
+                log('callResults', '❌ Sync test error: ' + error.message, 'error');
+            }
+        }
+
+        async function createTestMessage() {
+            log('messageResults', 'Creating test message...', 'info');
+            
+            try {
+                const message = {
+                    senderId: 'user1',
+                    recipientId: 'user2',
+                    content: 'Test message for reactions',
+                    conversationId: 'test_conversation'
+                };
+
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(message)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log('messageResults', `✅ Message created: ID ${data.id}`, 'success');
+                    window.testMessageId = data.id;
+                } else {
+                    log('messageResults', '❌ Failed to create message: ' + response.status, 'error');
+                }
+
+            } catch (error) {
+                log('messageResults', '❌ Error creating message: ' + error.message, 'error');
+            }
+        }
+
+        async function testMessageReactions() {
+            if (!window.testMessageId) {
+                log('messageResults', '⚠️ Please create a test message first', 'error');
+                return;
+            }
+
+            log('messageResults', 'Testing message reactions...', 'info');
+            
+            try {
+                const reaction = {
+                    messageId: window.testMessageId,
+                    action: 'react',
+                    userId: 'user2',
+                    emoji: '👍'
+                };
+
+                log('messageResults', 'Sending reaction request...', 'info');
+                
+                const response = await fetch('/api/message-actions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reaction)
+                });
+
+                log('messageResults', `Response status: ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('messageResults', `✅ Reaction added successfully: ${JSON.stringify(data.reactions)}`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log('messageResults', `❌ Failed to add reaction: ${response.status} - ${errorText}`, 'error');
+                }
+
+            } catch (error) {
+                log('messageResults', '❌ Error adding reaction: ' + error.message, 'error');
+            }
+        }
+
+        async function testMicrophone() {
+            log('audioResults', 'Testing microphone access...', 'info');
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                log('audioResults', '✅ Microphone access granted', 'success');
+                
+                // Stop the stream
+                stream.getTracks().forEach(track => track.stop());
+                log('audioResults', '✅ Audio stream stopped', 'success');
+                
+            } catch (error) {
+                log('audioResults', '❌ Microphone access denied: ' + error.message, 'error');
+            }
+        }
+
+        async function testWebRTC() {
+            log('audioResults', 'Testing WebRTC setup...', 'info');
+            
+            try {
+                const pc = new RTCPeerConnection({
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' }
+                    ]
+                });
+
+                log('audioResults', '✅ RTCPeerConnection created', 'success');
+
+                // Test ICE candidate handling
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        log('audioResults', '✅ ICE candidate generated', 'success');
+                    }
+                };
+
+                // Get user media and add to peer connection
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => {
+                    pc.addTrack(track, stream);
+                });
+
+                log('audioResults', '✅ Audio track added to peer connection', 'success');
+
+                // Create offer
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                log('audioResults', '✅ WebRTC offer created successfully', 'success');
+
+                // Clean up
+                stream.getTracks().forEach(track => track.stop());
+                pc.close();
+                
+                log('audioResults', '✅ WebRTC test completed successfully', 'success');
+
+            } catch (error) {
+                log('audioResults', '❌ WebRTC test failed: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
