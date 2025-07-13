@@ -11,12 +11,11 @@ import {
   editMessage,
   deleteMessage,
   reactToMessage,
-  replyToMessage,
   hasNewMessages,
   User,
   Message 
 } from '../api/index';
-import CallControls from './CallControls';
+import CallControls from './CallControls_new';
 import FileAttachment from './FileAttachment';
 import '../styles/global.css';
 
@@ -244,19 +243,6 @@ const ChatNew: React.FC = () => {
     }
   };
 
-  const handleReply = async (originalMessage: Message, replyContent: string) => {
-    if (!currentUser) return;
-    
-    try {
-      const replyMessage = await replyToMessage(originalMessage.id, replyContent, currentUser.userId);
-      setMessages(prev => [...prev, replyMessage]);
-      setReplyingTo(null);
-    } catch (err: any) {
-      console.error('Failed to reply to message:', err);
-      setError('Failed to reply to message: ' + err.message);
-    }
-  };
-
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -459,12 +445,6 @@ const ChatNew: React.FC = () => {
                     currentUser={currentUser}
                     onCallStart={handleCallStart}
                   />
-                  <button 
-                    onClick={() => setShowFileAttachment(!showFileAttachment)} 
-                    className={`file-toggle-btn ${showFileAttachment ? 'active' : ''}`}
-                  >
-                    📎
-                  </button>
                   <button onClick={() => loadMessages(true)} disabled={isLoading} className="refresh-btn">
                     🔄
                   </button>
@@ -505,6 +485,14 @@ const ChatNew: React.FC = () => {
               {/* Message Input */}
               <form onSubmit={handleSendMessage} className="message-form">
                 <div className="message-input-container">
+                  <button 
+                    type="button"
+                    onClick={() => setShowFileAttachment(!showFileAttachment)} 
+                    className={`file-toggle-btn ${showFileAttachment ? 'active' : ''}`}
+                    title="Attach file"
+                  >
+                    📎
+                  </button>
                   <input
                     type="text"
                     value={newMessage}

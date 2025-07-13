@@ -47,6 +47,21 @@
   status = 200
 
 [[redirects]]
+  from = "/api/message-actions"
+  to = "/.netlify/functions/message-actions"
+  status = 200
+
+[[redirects]]
+  from = "/api/file-storage"
+  to = "/.netlify/functions/file-storage"
+  status = 200
+
+[[redirects]]
+  from = "/api/call-management"
+  to = "/.netlify/functions/call-management"
+  status = 200
+
+[[redirects]]
   from = "/api/conversation/:splat"
   to = "/.netlify/functions/conversation/:splat"
   status = 200

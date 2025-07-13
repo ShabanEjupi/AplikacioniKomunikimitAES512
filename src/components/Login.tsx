@@ -421,9 +421,9 @@ const Login: React.FC = () => {
                 )}
             </div>
             
-            {/* Debug Info - only show in development or when there are errors */}
-            {(process.env.NODE_ENV === 'development' || error) && <DebugInfo registrationStatus={registrationStatus} />}
-            {(process.env.NODE_ENV === 'development' || error) && <ApiDiagnostics />}
+            {/* Debug Info - only show in development */}
+            {process.env.NODE_ENV === 'development' && <DebugInfo registrationStatus={registrationStatus} />}
+            {process.env.NODE_ENV === 'development' && <ApiDiagnostics />}
             
             <style>{`
                 @keyframes spin {
