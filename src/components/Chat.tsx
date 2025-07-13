@@ -20,13 +20,29 @@ const Chat: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [apiHealth, setApiHealth] = useState<'checking' | 'healthy' | 'unhealthy'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleCallStart = (type: 'voice' | 'video') => {
     console.log(`Starting ${type} call with ${selectedUser?.username}`);
     // You can add additional call logic here
   };
+
+  const checkApiHealth = useCallback(async () => {
+    try {
+      const response = await fetch('/api/health');
+      if (response.ok) {
+        setApiHealth('healthy');
+      } else {
+        setApiHealth('unhealthy');
+      }
+    } catch (error) {
+      console.error('API health check failed:', error);
+      setApiHealth('unhealthy');
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,7 +53,10 @@ const Chat: React.FC = () => {
       setIsLoading(true);
       const fetchedUsers = await fetchUsers();
       // Filter out current user from the list
-      const otherUsers = fetchedUsers.filter(user => user.username !== currentUser?.username);
+      const otherUsers = fetchedUsers.filter(user => 
+        user.username !== currentUser?.username && 
+        user.userId !== currentUser?.userId
+      );
       setUsers(otherUsers);
       setError('');
     } catch (err: any) {
@@ -46,7 +65,7 @@ const Chat: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser?.username]);
+  }, [currentUser?.username, currentUser?.userId]);
 
   const loadMessages = useCallback(async () => {
     if (!selectedUser || !currentUser) return;
@@ -76,8 +95,9 @@ const Chat: React.FC = () => {
       return;
     }
     setCurrentUser(user);
+    checkApiHealth();
     loadUsers();
-  }, [navigate, loadUsers]);
+  }, [navigate, loadUsers, checkApiHealth]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -88,6 +108,24 @@ const Chat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Add auto-refresh for messages every 3 seconds
+  useEffect(() => {
+    if (selectedUser && currentUser) {
+      // Start polling
+      pollIntervalRef.current = setInterval(() => {
+        loadMessages();
+      }, 3000);
+
+      return () => {
+        // Cleanup polling when user changes or component unmounts
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+      };
+    }
+  }, [selectedUser, currentUser, loadMessages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,6 +177,9 @@ const Chat: React.FC = () => {
           <h1>🔐 Crypto 512 Chat</h1>
           {currentUser && (
             <span className="current-user">Logged in as: {currentUser.username}</span>
+          )}
+          {apiHealth === 'unhealthy' && (
+            <span className="api-status-warning">⚠️ API Connection Issues</span>
           )}
         </div>
         <button onClick={handleLogout} className="logout-btn">

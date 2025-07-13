@@ -25,7 +25,10 @@ const config: Record<string, Config> = {
 
 // Force development mode when running locally (client-side detection)
 const isLocalhost = typeof window !== 'undefined' && 
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  (window.location.hostname === 'localhost' || 
+   window.location.hostname === '127.0.0.1' ||
+   window.location.port === '3000' ||
+   window.location.port === '3100');
 
 const environment = (process.env.NODE_ENV === 'production' && isLocalhost) 
   ? 'development' 

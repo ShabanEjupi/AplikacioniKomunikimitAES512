@@ -66,7 +66,9 @@ const API_BASE = config.API_BASE_URL;
 // Authentication functions
 export const loginUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
-    console.log('🔐 Attempting login...');
+    console.log('🔐 Attempting login with API base:', API_BASE);
+    console.log('🔐 Full URL:', `${API_BASE}/login`);
+    
     const response = await fetch(`${API_BASE}/login`, {
       method: 'POST',
       headers: {
@@ -75,11 +77,17 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
       body: JSON.stringify(credentials),
     });
 
+    console.log('🔐 Response status:', response.status);
+    console.log('🔐 Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('🔐 Login failed response:', errorText);
+      throw new Error(`Login failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('🔐 Login response data:', data);
     
     // Store auth info
     if (data.success && data.user) {
@@ -91,7 +99,7 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
     
     return data;
   } catch (error: any) {
-    console.error('Login error:', error);
+    console.error('🔐 Login error:', error);
     throw error;
   }
 };
@@ -153,18 +161,27 @@ export const fetchSystemStatus = async (): Promise<SystemStatus> => {
 // User management functions
 export const fetchUsers = async (): Promise<User[]> => {
   try {
-    console.log('👥 Fetching users...');
+    console.log('👥 Fetching users from:', `${API_BASE}/users`);
     const response = await fetch(`${API_BASE}/users`);
 
+    console.log('👥 Users response status:', response.status);
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch users: ${response.status}`);
+      const errorText = await response.text();
+      console.error('👥 Users failed response:', errorText);
+      throw new Error(`Failed to fetch users: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('👥 Users response data:', data);
+    
     // Handle both formats: direct array or { users: array }
-    return Array.isArray(data) ? data : data.users || [];
+    const users = Array.isArray(data) ? data : data.users || [];
+    console.log('👥 Processed users:', users);
+    
+    return users;
   } catch (error: any) {
-    console.error('Fetch users error:', error);
+    console.error('👥 Fetch users error:', error);
     throw error;
   }
 };

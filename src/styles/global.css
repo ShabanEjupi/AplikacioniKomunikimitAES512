@@ -49,6 +49,12 @@ body {
   opacity: 0.9;
 }
 
+.api-status-warning {
+  font-size: 0.8rem;
+  color: #ffeb3b;
+  display: block;
+}
+
 .logout-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white;
