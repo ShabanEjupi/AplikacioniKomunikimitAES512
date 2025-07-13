@@ -1,29 +1,22 @@
-# Set the base directory to the repository root
-# This overrides any conflicting UI settings.
+# Netlify Configuration for Crypto 512 Secure Communication App
 [build]
-  base    = "/" 
+  base = "client"
   publish = "client/build"
-  # Use the ultra-simple build script
-  command = "node build-simple-direct.js"
-  functions = "netlify/functions"
+  command = "npm install --legacy-peer-deps && npm run build"
 
 [build.environment]
-  NODE_VERSION = "18.20.8"
-  NPM_VERSION = "9" # Specifying NPM version is good practice
-  CI = "false" # Often helps with create-react-app builds
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+  CI = "false"
   SKIP_PREFLIGHT_CHECK = "true"
   NODE_OPTIONS = "--max-old-space-size=4096"
   GENERATE_SOURCEMAP = "false"
   NPM_CONFIG_LEGACY_PEER_DEPS = "true"
-  NPM_CONFIG_FORCE = "false"
-  NPM_CONFIG_WORKSPACES = "false"  # Disable workspaces
-  # TypeScript version resolution
-  NPM_CONFIG_OVERRIDES = "typescript@4.9.5"
-  NPM_CONFIG_RESOLUTIONS = "typescript@4.9.5"
-  # Additional npm configuration for workspace issues
-  NPM_CONFIG_INCLUDE_WORKSPACE_ROOT = "false"
 
-# Your redirects remain the same
+[functions]
+  directory = "netlify/functions"
+
+# API redirects
 [[redirects]]
   from = "/api/health"
   to = "/.netlify/functions/health-check"
@@ -36,27 +29,17 @@
 
 [[redirects]]
   from = "/api/login"
-  to = "/.netlify/functions/login-db"
+  to = "/.netlify/functions/login"
   status = 200
 
 [[redirects]]
   from = "/api/register"
-  to = "/.netlify/functions/register-db"
+  to = "/.netlify/functions/register"
   status = 200
 
 [[redirects]]
   from = "/api/users"
   to = "/.netlify/functions/users"
-  status = 200
-
-[[redirects]]
-  from = "/api/messages/:splat"
-  to = "/.netlify/functions/messages-conversation/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/message"
-  to = "/.netlify/functions/message"
   status = 200
 
 [[redirects]]
