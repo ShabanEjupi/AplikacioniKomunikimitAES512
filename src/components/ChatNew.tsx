@@ -15,9 +15,11 @@ import {
   User,
   Message 
 } from '../api/index';
-import CallControls from './CallControls_new';
+import CallControlsEnhanced from './CallControls_Enhanced';
 import FileAttachment from './FileAttachment';
+import Settings from './Settings';
 import '../styles/global.css';
+import '../styles/enhanced.css';
 
 const ChatNew: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -34,6 +36,7 @@ const ChatNew: React.FC = () => {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [showFileAttachment, setShowFileAttachment] = useState(false);
   const [lastMessageTimestamp, setLastMessageTimestamp] = useState<string>('');
+  const [showSettings, setShowSettings] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -372,9 +375,14 @@ const ChatNew: React.FC = () => {
             <span className="api-status-warning">⚠️ API Connection Issues</span>
           )}
         </div>
-        <button onClick={handleLogout} className="logout-btn">
-          Logout
-        </button>
+        <div className="header-actions">
+          <button onClick={() => setShowSettings(true)} className="settings-btn" title="Settings">
+            ⚙️
+          </button>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className="chat-layout">
@@ -440,7 +448,7 @@ const ChatNew: React.FC = () => {
                   </div>
                 </div>
                 <div className="chat-header-controls">
-                  <CallControls
+                  <CallControlsEnhanced
                     selectedUser={selectedUser}
                     currentUser={currentUser}
                     onCallStart={handleCallStart}
@@ -526,6 +534,11 @@ const ChatNew: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <Settings onClose={() => setShowSettings(false)} />
+      )}
     </div>
   );
 };

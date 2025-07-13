@@ -3,9 +3,11 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Login from './components/Login';
 import Chat from './components/Chat';
 import ChatNew from './components/ChatNew';
+import Settings from './components/Settings';
 import { getCurrentUser, isAuthenticated } from './api/index';
 import SessionManager from './auth/session';
 import './styles/global.css';
+import './styles/enhanced.css';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {

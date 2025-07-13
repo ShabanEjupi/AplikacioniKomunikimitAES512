@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 
 interface FileAttachmentProps {
   onFileSelect: (files: FileList | null) => void;
@@ -10,7 +10,16 @@ interface FileAttachmentProps {
 interface FilePreview {
   file: File;
   preview: string;
-  type: 'image' | 'video' | 'document';
+  type: 'image' | 'video' | 'document' | 'audio';
+  editedPreview?: string;
+}
+
+interface FileEditOptions {
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  rotation: number;
+  filter: string;
 }
 
 const FileAttachment: React.FC<FileAttachmentProps> = ({
@@ -22,7 +31,17 @@ const FileAttachment: React.FC<FileAttachmentProps> = ({
   const [previews, setPreviews] = useState<FilePreview[]>([]);
   const [showOneTime, setShowOneTime] = useState(false);
   const [oneTimeExpiry, setOneTimeExpiry] = useState<number>(60); // seconds
+  const [editingFile, setEditingFile] = useState<number | null>(null);
+  const [editOptions, setEditOptions] = useState<FileEditOptions>({
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    rotation: 0,
+    filter: 'none'
+  });
+  const [isExpanded, setIsExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -39,13 +58,16 @@ const FileAttachment: React.FC<FileAttachmentProps> = ({
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       let preview = '';
-      let type: 'image' | 'video' | 'document' = 'document';
+      let type: 'image' | 'video' | 'document' | 'audio' = 'document';
       
       if (file.type.startsWith('image/')) {
         type = 'image';
         preview = URL.createObjectURL(file);
       } else if (file.type.startsWith('video/')) {
         type = 'video';
+        preview = URL.createObjectURL(file);
+      } else if (file.type.startsWith('audio/')) {
+        type = 'audio';
         preview = URL.createObjectURL(file);
       } else {
         type = 'document';
@@ -90,6 +112,95 @@ const FileAttachment: React.FC<FileAttachmentProps> = ({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  const applyImageFilter = useCallback((file: File, options: FileEditOptions): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          reject(new Error('Canvas not available'));
+          return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas context not available'));
+          return;
+        }
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Apply rotation
+        if (options.rotation !== 0) {
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate((options.rotation * Math.PI) / 180);
+          ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        }
+
+        // Apply filters
+        ctx.filter = `brightness(${options.brightness}%) contrast(${options.contrast}%) saturate(${options.saturation}%)`;
+
+        if (options.filter !== 'none') {
+          switch (options.filter) {
+            case 'grayscale':
+              ctx.filter += ' grayscale(100%)';
+              break;
+            case 'sepia':
+              ctx.filter += ' sepia(100%)';
+              break;
+            case 'blur':
+              ctx.filter += ' blur(2px)';
+              break;
+            case 'vintage':
+              ctx.filter += ' sepia(50%) contrast(120%) brightness(110%)';
+              break;
+          }
+        }
+
+        ctx.drawImage(img, 0, 0);
+        const editedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        resolve(editedDataUrl);
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }, []);
+
+  const startEditing = useCallback((index: number) => {
+    setEditingFile(index);
+    setIsExpanded(true);
+  }, []);
+
+  const applyEdit = useCallback(async (index: number) => {
+    const preview = previews[index];
+    if (preview.type === 'image') {
+      try {
+        const editedPreview = await applyImageFilter(preview.file, editOptions);
+        const newPreviews = [...previews];
+        newPreviews[index] = { ...preview, editedPreview };
+        setPreviews(newPreviews);
+        setEditingFile(null);
+      } catch (error) {
+        console.error('Failed to apply edit:', error);
+      }
+    }
+  }, [previews, editOptions, applyImageFilter]);
+
+  const resetEdit = useCallback((index: number) => {
+    const newPreviews = [...previews];
+    delete newPreviews[index].editedPreview;
+    setPreviews(newPreviews);
+    setEditingFile(null);
+    setEditOptions({
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+      rotation: 0,
+      filter: 'none'
+    });
+  }, [previews]);
 
   return (
     <div className="file-attachment">

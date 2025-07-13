@@ -22,32 +22,42 @@ const generateFileId = () => {
 };
 
 const encryptFile = (buffer, key) => {
-  const algorithm = 'aes-256-gcm';
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipher(algorithm, key);
-  
-  let encrypted = cipher.update(buffer);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  
-  const authTag = cipher.getAuthTag();
-  
-  return {
-    encrypted: encrypted.toString('base64'),
-    iv: iv.toString('base64'),
-    authTag: authTag.toString('base64')
-  };
+  try {
+    const algorithm = 'aes-256-gcm';
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipher(algorithm, key);
+    
+    let encrypted = cipher.update(buffer);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    
+    const authTag = cipher.getAuthTag();
+    
+    return {
+      encrypted: encrypted.toString('base64'),
+      iv: iv.toString('base64'),
+      authTag: authTag.toString('base64')
+    };
+  } catch (error) {
+    console.error('Encryption error:', error);
+    throw new Error('File encryption failed');
+  }
 };
 
 const decryptFile = (encryptedData, key) => {
-  const algorithm = 'aes-256-gcm';
-  const decipher = crypto.createDecipher(algorithm, key);
-  
-  decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'base64'));
-  
-  let decrypted = decipher.update(Buffer.from(encryptedData.encrypted, 'base64'));
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  
-  return decrypted;
+  try {
+    const algorithm = 'aes-256-gcm';
+    const decipher = crypto.createDecipher(algorithm, key);
+    
+    decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'base64'));
+    
+    let decrypted = decipher.update(Buffer.from(encryptedData.encrypted, 'base64'));
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    
+    return decrypted;
+  } catch (error) {
+    console.error('Decryption error:', error);
+    throw new Error('File decryption failed');
+  }
 };
 
 exports.handler = async (event, context) => {
@@ -96,8 +106,18 @@ exports.handler = async (event, context) => {
       const fileId = generateFileId();
       const uploadTime = new Date().toISOString();
       
-      // Encrypt file data
-      const encryptedFile = encryptFile(Buffer.from(fileData, 'base64'), encryptionKey || 'default-key');
+// Encrypt file data
+      let encryptedFile;
+      try {
+        encryptedFile = encryptFile(Buffer.from(fileData, 'base64'), encryptionKey || 'default-key');
+      } catch (encryptError) {
+        console.error('Encryption error:', encryptError);
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Failed to encrypt file data' })
+        };
+      }
       
       // Store file metadata and encrypted data
       const fileRecord = {
@@ -116,8 +136,13 @@ exports.handler = async (event, context) => {
 
       // Generate thumbnail for images
       if (fileType.startsWith('image/')) {
-        // In a real implementation, you'd generate actual thumbnails
-        fileRecord.thumbnail = fileData.substring(0, 1000); // Simulate thumbnail
+        try {
+          // Create a smaller thumbnail (first 2000 chars of base64)
+          fileRecord.thumbnail = fileData.substring(0, 2000);
+        } catch (thumbError) {
+          console.error('Thumbnail generation error:', thumbError);
+          fileRecord.thumbnail = null;
+        }
       }
 
       global.fileStore.files.set(fileId, fileRecord);
@@ -183,10 +208,11 @@ exports.handler = async (event, context) => {
           return {
             statusCode: 200,
             headers: {
-              ...headers,
+              'Access-Control-Allow-Origin': '*',
               'Content-Type': fileRecord.fileType,
-              'Content-Disposition': `attachment; filename="${fileRecord.fileName}"`,
-              'Cache-Control': 'no-cache'
+              'Content-Disposition': `attachment; filename="${encodeURIComponent(fileRecord.fileName)}"`,
+              'Cache-Control': 'no-cache',
+              'Content-Length': decryptedData.length.toString()
             },
             body: decryptedData.toString('base64'),
             isBase64Encoded: true

@@ -363,8 +363,9 @@ export const sendFileMessage = async (fileData: any, senderId: string, recipient
 // Message action functions
 export const editMessage = async (messageId: string, content: string, userId: string): Promise<Message> => {
   try {
+    console.log('✏️ Editing message:', { messageId, content, userId });
     const response = await fetch(`${API_BASE}/message-actions`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -378,10 +379,14 @@ export const editMessage = async (messageId: string, content: string, userId: st
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to edit message: ${response.status}`);
+      const errorText = await response.text();
+      console.error('✏️ Edit error response:', errorText);
+      throw new Error(`Failed to edit message: ${response.status} ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('✏️ Edit success:', result);
+    return result;
   } catch (error: any) {
     console.error('Edit message error:', error);
     throw error;
@@ -390,8 +395,9 @@ export const editMessage = async (messageId: string, content: string, userId: st
 
 export const deleteMessage = async (messageId: string, userId: string): Promise<void> => {
   try {
+    console.log('🗑️ Deleting message:', { messageId, userId });
     const response = await fetch(`${API_BASE}/message-actions`, {
-      method: 'DELETE',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -404,8 +410,13 @@ export const deleteMessage = async (messageId: string, userId: string): Promise<
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete message: ${response.status}`);
+      const errorText = await response.text();
+      console.error('🗑️ Delete error response:', errorText);
+      throw new Error(`Failed to delete message: ${response.status} ${errorText}`);
     }
+
+    const result = await response.json();
+    console.log('🗑️ Delete success:', result);
   } catch (error: any) {
     console.error('Delete message error:', error);
     throw error;
