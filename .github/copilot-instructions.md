@@ -246,4 +246,4 @@ When implementing features, always ask:
 - "Does this push the industry forward by at least 5 years?"
 - "Would aliens find our communication methods impressive?"
 
-Remember: We're not just building a chat app - we're pioneering the future of human communication. Every line of code should reflect that ambition.
+Remember: We're not just building a chat app - we're pioneering the future of human communication. Every line of code should reflect that ambition. Also always build and deploy the app in Netlify and commit changes to git.

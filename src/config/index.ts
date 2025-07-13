@@ -7,7 +7,7 @@ interface Config {
 
 const config: Record<string, Config> = {
   development: {
-    API_BASE_URL: 'http://localhost:3001/api',
+    API_BASE_URL: 'http://localhost:3001/.netlify/functions', // Local server with functions
     WS_URL: 'http://localhost:3001',
     USE_HTTPS: false,
   },
@@ -17,7 +17,7 @@ const config: Record<string, Config> = {
     USE_HTTPS: true,
   },
   test: {
-    API_BASE_URL: 'http://localhost:3001/api',
+    API_BASE_URL: 'http://localhost:3001/.netlify/functions', // Local server with functions
     WS_URL: 'http://localhost:3001',
     USE_HTTPS: false,
   }
@@ -30,9 +30,10 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.port === '3000' ||
    window.location.port === '3100');
 
-const environment = (process.env.NODE_ENV === 'production' && isLocalhost) 
+// For local development, always use development config even in production build
+const environment = isLocalhost 
   ? 'development' 
-  : (process.env.REACT_APP_NODE_ENV || process.env.NODE_ENV || 'development');
+  : (process.env.REACT_APP_NODE_ENV || process.env.NODE_ENV || 'production');
 
 // Additional debug logging
 console.log('🔧 Environment detection:', {
