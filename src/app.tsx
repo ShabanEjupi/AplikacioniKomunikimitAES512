@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './components/Login';
-import Chat from './components/Chat';
 import ChatNew from './components/ChatNew';
-import Settings from './components/Settings';
 import { getCurrentUser, isAuthenticated } from './api/index';
 import SessionManager from './auth/session';
 import './styles/global.css';
@@ -121,7 +119,6 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/chat" element={<ProtectedRoute><ChatNew /></ProtectedRoute>} />
-        <Route path="/chat-old" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/chat" replace />} />
       </Routes>
     </Router>

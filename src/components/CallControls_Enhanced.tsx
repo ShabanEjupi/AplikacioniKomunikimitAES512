@@ -321,7 +321,8 @@ const CallControlsEnhanced: React.FC<CallControlsProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'accept_call',
-          callId: incomingCall.callId
+          callId: incomingCall.callId,
+          userId: currentUser?.userId
         })
       });
 

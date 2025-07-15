@@ -143,7 +143,8 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: 'accept_call',
-                            callId: callData.callId
+                            callId: callData.callId,
+                            userId: 'user2'
                         })
                     });
 
@@ -206,7 +207,7 @@
                 await fetch('/api/call-management', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'accept_call', callId: callId })
+                    body: JSON.stringify({ action: 'accept_call', callId: callId, userId: 'user2' })
                 });
 
                 // Wait a few seconds and check status

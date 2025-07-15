@@ -113,11 +113,11 @@ exports.handler = async (event, context) => {
         };
 
       case 'accept_call':
-        if (!callId || !userId) {
+        if (!callId) {
           return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ error: 'callId and userId are required' })
+            body: JSON.stringify({ error: 'callId is required' })
           };
         }
         
@@ -145,10 +145,10 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
               recipientId: callToAccept.callerId,
               type: 'call_accepted',
-              senderId: userId,
+              senderId: callToAccept.recipientId,
               callId: callId,
               data: {
-                acceptedBy: userId
+                acceptedBy: callToAccept.recipientId
               }
             })
           });
@@ -167,11 +167,11 @@ exports.handler = async (event, context) => {
         };
 
       case 'decline_call':
-        if (!callId || !userId) {
+        if (!callId) {
           return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ error: 'callId and userId are required' })
+            body: JSON.stringify({ error: 'callId is required' })
           };
         }
         
@@ -197,10 +197,10 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
               recipientId: callToDecline.callerId,
               type: 'call_declined',
-              senderId: userId,
+              senderId: callToDecline.recipientId,
               callId: callId,
               data: {
-                declinedBy: userId
+                declinedBy: callToDecline.recipientId
               }
             })
           });
