@@ -18,7 +18,7 @@ const config: Record<string, Config> = {
     ENABLE_DEBUG: true,
   },
   production: {
-    API_BASE_URL: '/.netlify/functions', // Direct access to Netlify Functions
+    API_BASE_URL: '/api', // Use redirects from netlify.toml for cleaner URLs
     WS_URL: 'wss://cryptocall.netlify.app', // WebSocket not available in functions, will fallback
     USE_HTTPS: true,
     POLLING_INTERVAL: 2000,

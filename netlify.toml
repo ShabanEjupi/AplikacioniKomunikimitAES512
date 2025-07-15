@@ -28,7 +28,7 @@
   
   # 👥 User Management
   ENABLE_REGISTRATION = "true"
-  DEFAULT_USERS_ENABLED = "false"
+  DEFAULT_USERS_ENABLED = "true"
   MAX_USERS_PER_SESSION = "1000"
   
   # 💬 Message Settings
@@ -97,6 +97,22 @@
 [[redirects]]
   from = "/api/security/info"
   to = "/.netlify/functions/security-info"
+  status = 200
+
+[[redirects]]
+  from = "/api/notifications"
+  to = "/.netlify/functions/notifications"
+  status = 200
+
+[[redirects]]
+  from = "/api/system-status"
+  to = "/.netlify/functions/system-status"
+  status = 200
+
+# Catch-all redirect for the SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
 
 [[redirects]]
