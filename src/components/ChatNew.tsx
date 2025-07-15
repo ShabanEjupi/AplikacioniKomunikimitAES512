@@ -570,6 +570,76 @@ const ChatNew: React.FC = () => {
     );
   };
 
+  // 📞 Call Management Functions
+  const acceptCall = async (notification: any) => {
+    try {
+      setError('');
+      console.log('🔔 Accepting call from:', notification.senderName);
+      
+      // Send accept response to server
+      const response = await fetch('/api/call-management', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'accept_call',
+          callId: notification.callId,
+          userId: currentUser?.userId,
+          recipientId: notification.senderId
+        })
+      });
+      
+      if (response.ok) {
+        // Remove the notification
+        setNotifications(prev => prev.filter(n => n.id !== notification.id));
+        
+        // Start the call UI
+        console.log('✅ Call accepted, starting call interface...');
+        // You can trigger the call interface here
+        // For now, just show a success message
+        setError(`📞 Call accepted! Connecting to ${notification.senderName}...`);
+        
+        // Auto-clear the message after 3 seconds
+        setTimeout(() => setError(''), 3000);
+      } else {
+        throw new Error('Failed to accept call');
+      }
+    } catch (error) {
+      console.error('❌ Error accepting call:', error);
+      setError('Failed to accept call. Please try again.');
+    }
+  };
+
+  const declineCall = async (notification: any) => {
+    try {
+      setError('');
+      console.log('📵 Declining call from:', notification.senderName);
+      
+      // Send decline response to server
+      const response = await fetch('/api/call-management', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'decline_call',
+          callId: notification.callId,
+          userId: currentUser?.userId,
+          recipientId: notification.senderId
+        })
+      });
+      
+      if (response.ok) {
+        // Remove the notification
+        setNotifications(prev => prev.filter(n => n.id !== notification.id));
+        console.log('✅ Call declined');
+      } else {
+        throw new Error('Failed to decline call');
+      }
+    } catch (error) {
+      console.error('❌ Error declining call:', error);
+      setError('Failed to decline call');
+    }
+  };
+
+  // 🗑️ Notification Management
   const dismissNotification = (notificationId: string) => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
   };
@@ -595,10 +665,31 @@ const ChatNew: React.FC = () => {
                   </>
                 )}
                 {notification.type === 'call_invite' && (
-                  <>
-                    <span className="notification-icon">📞</span>
-                    <span>{notification.senderName} is calling you ({notification.callType})</span>
-                  </>
+                  <div className="call-invite-notification">
+                    <div className="call-invite-info">
+                      <span className="notification-icon">📞</span>
+                      <div className="call-invite-details">
+                        <div className="caller-name">{notification.senderName} is calling you</div>
+                        <div className="call-type">📹 {notification.callType} call</div>
+                      </div>
+                    </div>
+                    <div className="call-invite-actions">
+                      <button 
+                        onClick={() => acceptCall(notification)} 
+                        className="accept-call-btn"
+                        title="Accept call"
+                      >
+                        📞 Accept
+                      </button>
+                      <button 
+                        onClick={() => declineCall(notification)} 
+                        className="decline-call-btn"
+                        title="Decline call"
+                      >
+                        📵 Decline
+                      </button>
+                    </div>
+                  </div>
                 )}
                 {notification.type === 'call_ended' && (
                   <>

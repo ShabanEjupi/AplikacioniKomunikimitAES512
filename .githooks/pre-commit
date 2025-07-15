@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# 🚀 Quantum Git Hook - Pre-commit Environment Sync
+# Automatically syncs environment variables to Netlify before commit
+
+echo "🌟 Executing quantum pre-commit hook..."
+
+# Check if .env has changed
+if git diff --cached --name-only | grep -q "\.env$"; then
+    echo "🔧 .env file changed, syncing to Netlify..."
+    
+    # Run the sync script
+    node scripts/sync-env-to-netlify.js
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ Environment sync successful!"
+    else
+        echo "❌ Environment sync failed - commit blocked"
+        exit 1
+    fi
+else
+    echo "📋 No .env changes detected, skipping sync"
+fi
+
+echo "🎉 Pre-commit hook completed successfully!"

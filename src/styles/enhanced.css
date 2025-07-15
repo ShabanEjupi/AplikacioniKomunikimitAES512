@@ -2537,45 +2537,162 @@ body {
 .notification-dismiss {
   background: none;
   border: none;
-  font-size: 20px;
-  color: #999;
+  font-size: 18px;
+  color: #6c757d;
   cursor: pointer;
-  padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+  padding: 2px;
+  margin-left: 8px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
 .notification-dismiss:hover {
-  background: #f0f0f0;
-  color: #666;
+  opacity: 1;
 }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
+/* Pulsing animation for call invites */
+.call-invite-notification {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4);
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+  50% {
+    box-shadow: 0 0 0 10px rgba(39, 174, 96, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(39, 174, 96, 0);
   }
 }
 
-/* Auto-hide notifications after 5 seconds */
+/* 📞 Call Invitation Styles */
+.call-invite-notification {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.call-invite-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.call-invite-details {
+  flex: 1;
+}
+
+.caller-name {
+  font-weight: bold;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.call-type {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-top: 2px;
+}
+
+.call-invite-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.accept-call-btn {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.accept-call-btn:hover {
+  background: linear-gradient(135deg, #219a52, #27ae60);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+}
+
+.decline-call-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.decline-call-btn:hover {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+/* Enhanced notification styles */
 .notification-item {
-  animation: slideInRight 0.3s ease-out, fadeOut 0.5s ease-out 4.5s forwards;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-width: 300px;
+  max-width: 400px;
+  animation: slideInFromRight 0.3s ease-out;
 }
 
-@keyframes fadeOut {
-  to {
-    opacity: 0;
+@keyframes slideInFromRight {
+  from {
     transform: translateX(100%);
+    opacity: 0;
   }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-dismiss {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 8px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.notification-dismiss:hover {
+  opacity: 1;
 }
 
 /* Layout */

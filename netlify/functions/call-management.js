@@ -113,26 +113,108 @@ exports.handler = async (event, context) => {
         };
 
       case 'accept_call':
-        if (!callId) {
+        if (!callId || !userId) {
           return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ error: 'callId is required' })
+            body: JSON.stringify({ error: 'callId and userId are required' })
           };
         }
-
+        
         const callToAccept = store.activeCalls.get(callId);
-        if (callToAccept) {
-          callToAccept.status = 'connected';
-          callToAccept.connectedAt = new Date().toISOString();
-          callToAccept.connectedTimestamp = Date.now(); // Add timestamp for accurate duration sync
-          store.activeCalls.set(callId, callToAccept);
+        if (!callToAccept) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'Call not found or already ended' })
+          };
         }
-
+        
+        // Update call status to accepted
+        callToAccept.status = 'accepted';
+        callToAccept.acceptedAt = Date.now();
+        store.activeCalls.set(callId, callToAccept);
+        store.lastAccess = Date.now();
+        
+        // Send acceptance notification to caller
+        try {
+          const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+          await fetch(`${baseUrl}/.netlify/functions/notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recipientId: callToAccept.callerId,
+              type: 'call_accepted',
+              senderId: userId,
+              callId: callId,
+              data: {
+                acceptedBy: userId
+              }
+            })
+          });
+        } catch (error) {
+          console.error('Failed to send call acceptance notification:', error);
+        }
+        
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify({ success: true })
+          body: JSON.stringify({ 
+            success: true, 
+            message: 'Call accepted',
+            callData: callToAccept
+          })
+        };
+
+      case 'decline_call':
+        if (!callId || !userId) {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: 'callId and userId are required' })
+          };
+        }
+        
+        const callToDecline = store.activeCalls.get(callId);
+        if (!callToDecline) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'Call not found or already ended' })
+          };
+        }
+        
+        // Remove the call from active calls
+        store.activeCalls.delete(callId);
+        store.lastAccess = Date.now();
+        
+        // Send decline notification to caller
+        try {
+          const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+          await fetch(`${baseUrl}/.netlify/functions/notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recipientId: callToDecline.callerId,
+              type: 'call_declined',
+              senderId: userId,
+              callId: callId,
+              data: {
+                declinedBy: userId
+              }
+            })
+          });
+        } catch (error) {
+          console.error('Failed to send call decline notification:', error);
+        }
+        
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ 
+            success: true, 
+            message: 'Call declined'
+          })
         };
 
       case 'check_call_status':
