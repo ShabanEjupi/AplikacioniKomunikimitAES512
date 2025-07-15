@@ -9,7 +9,7 @@ import {
   User,
   Message 
 } from '../api/index';
-import CallControls from './CallControls_new';
+import CallControls from './CallControls_Enhanced';
 import '../styles/global.css';
 
 const Chat: React.FC = () => {

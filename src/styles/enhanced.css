@@ -994,7 +994,7 @@ body {
 }
 
 .cancel-btn {
-  background: #6c757d;
+  background: #f44336;
   color: white;
 }
 
@@ -2488,58 +2488,94 @@ body {
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
 }
 
-/* Mobile File Preview */
-@media (max-width: 768px) {
-  .file-preview-modal {
-    padding: 10px;
-  }
+/* Notification overlay styles */
+.notifications-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
+}
 
-  .file-preview-content {
-    max-width: 95vw;
-    max-height: 95vh;
-  }
+.notification-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideInRight 0.3s ease-out;
+  position: relative;
+}
 
-  .file-preview-header {
-    padding: 12px 15px;
-  }
+.notification-item:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
 
-  .file-preview-header h3 {
-    font-size: 1rem;
-  }
+.notification-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+}
 
-  .file-preview-body {
-    padding: 15px;
-  }
+.notification-emoji {
+  font-size: 18px;
+}
 
-  .file-preview-body iframe {
-    width: 85vw;
-    height: 60vh;
-  }
+.notification-icon {
+  font-size: 16px;
+}
 
-  .file-message {
-    max-width: 100%;
-    margin: 8px 0;
-  }
+.notification-dismiss {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
 
-  .file-actions {
-    flex-direction: column;
-  }
+.notification-dismiss:hover {
+  background: #f0f0f0;
+  color: #666;
+}
 
-  .download-btn,
-  .preview-btn {
-    padding: 10px 15px;
-    font-size: 14px;
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
   }
-
-  .video-placeholder,
-  .pdf-placeholder,
-  .audio-placeholder {
-    padding: 15px;
-  }
-
-  .video-icon,
-  .pdf-icon,
-  .audio-icon {
-    font-size: 24px;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
+
+/* Auto-hide notifications after 5 seconds */
+.notification-item {
+  animation: slideInRight 0.3s ease-out, fadeOut 0.5s ease-out 4.5s forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Layout */

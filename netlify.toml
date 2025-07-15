@@ -8,10 +8,38 @@
   NPM_VERSION = "9"
   CI = "false"
   SKIP_PREFLIGHT_CHECK = "true"
-  NODE_OPTIONS = "--max-old-space-size=4096"
+  NODE_OPTIONS = "--max-old-space-size=4096 --openssl-legacy-provider"
   GENERATE_SOURCEMAP = "false"
   NPM_CONFIG_LEGACY_PEER_DEPS = "true"
   NPM_CONFIG_FORCE = "false"
+  NODE_ENV = "production"
+  REACT_APP_NODE_ENV = "production"
+  
+  # 🔐 Security Configuration (use production secrets in Netlify dashboard)
+  JWT_SECRET = "8f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a291"
+  SESSION_SECRET = "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b"
+  ENCRYPTION_KEY = "9e8d7c6b5a4918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a291f"
+  AES_256_KEY = "7f6e5d4c3b2a1918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a29"
+  
+  # 📁 File & Storage Settings
+  MAX_FILE_SIZE = "52428800"
+  MAX_FILES_PER_USER = "100"
+  FILE_ENCRYPTION_ENABLED = "true"
+  
+  # 👥 User Management
+  ENABLE_REGISTRATION = "true"
+  DEFAULT_USERS_ENABLED = "false"
+  MAX_USERS_PER_SESSION = "1000"
+  
+  # 💬 Message Settings
+  MAX_MESSAGE_LENGTH = "10000"
+  ENABLE_MESSAGE_ENCRYPTION = "true"
+  POLLING_INTERVAL = "2000"
+  
+  # 🛡️ Security Settings
+  ENABLE_RATE_LIMITING = "true"
+  MAX_REQUESTS_PER_MINUTE = "100"
+  SECURITY_HEADERS_ENABLED = "true"
 
 [functions]
   directory = "netlify/functions"

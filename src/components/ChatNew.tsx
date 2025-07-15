@@ -11,7 +11,9 @@ import {
   editMessage,
   deleteMessage,
   reactToMessage,
+  replyToMessage,
   hasNewMessages,
+  getNotifications,
   User,
   Message 
 } from '../api/index';
@@ -38,6 +40,8 @@ const ChatNew: React.FC = () => {
   const [lastMessageTimestamp, setLastMessageTimestamp] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showFilePreview, setShowFilePreview] = useState<any>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -162,6 +166,57 @@ const ChatNew: React.FC = () => {
     }
   }, [selectedUser, currentUser]);
 
+  const pollNotifications = useCallback(async () => {
+    if (!currentUser) return;
+    
+    try {
+      const newNotifications = await getNotifications(currentUser.userId);
+      if (newNotifications.length > 0) {
+        setNotifications(prev => [...prev, ...newNotifications]);
+        
+        // Show desktop notifications if supported
+        if ('Notification' in window && Notification.permission === 'granted') {
+          newNotifications.forEach(notif => {
+            let title = '';
+            let body = '';
+            
+            switch (notif.type) {
+              case 'reaction':
+                title = 'New reaction';
+                body = `Someone reacted ${notif.emoji} to your message`;
+                break;
+              case 'reply':
+                title = 'New reply';
+                body = `Someone replied to your message: ${notif.messageContent}`;
+                break;
+              case 'call_invite':
+                title = 'Incoming call';
+                body = `${notif.senderName} is calling you (${notif.callType})`;
+                break;
+              case 'call_ended':
+                title = 'Call ended';
+                body = `Call has been ended`;
+                break;
+            }
+            
+            if (title) {
+              new Notification(title, { body, icon: '/favicon.ico' });
+            }
+          });
+        }
+        
+        // Auto-dismiss notifications after 5 seconds
+        newNotifications.forEach(notif => {
+          setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== notif.id));
+          }, 5000);
+        });
+      }
+    } catch (error) {
+      console.error('Failed to poll notifications:', error);
+    }
+  }, [currentUser]);
+
   const smartPoll = useCallback(async () => {
     if (!selectedUser || !currentUser) return;
     
@@ -184,6 +239,11 @@ const ChatNew: React.FC = () => {
     setCurrentUser(user);
     checkApiHealth();
     loadUsers();
+    
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   }, [navigate, loadUsers, checkApiHealth]);
 
   useEffect(() => {
@@ -198,7 +258,10 @@ const ChatNew: React.FC = () => {
 
   useEffect(() => {
     if (selectedUser && currentUser) {
-      pollIntervalRef.current = setInterval(smartPoll, 5000);
+      pollIntervalRef.current = setInterval(() => {
+        smartPoll();
+        pollNotifications();
+      }, 5000);
 
       return () => {
         if (pollIntervalRef.current) {
@@ -207,7 +270,7 @@ const ChatNew: React.FC = () => {
         }
       };
     }
-  }, [selectedUser, currentUser, smartPoll]);
+  }, [selectedUser, currentUser, smartPoll, pollNotifications]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,17 +293,9 @@ const ChatNew: React.FC = () => {
         let messageData;
         
         if (replyingTo) {
-          messageData = {
-            senderId: currentUser.userId,
-            recipientId: selectedUser.userId,
-            content: newMessage.trim(),
-            encrypted: true,
-            replyTo: {
-              messageId: replyingTo.id,
-              content: replyingTo.content.substring(0, 100),
-              senderId: replyingTo.senderId
-            }
-          };
+          // Use the dedicated reply API function
+          const replyMessage = await replyToMessage(replyingTo.id, newMessage.trim(), currentUser.userId);
+          setMessages(prev => [...prev, replyMessage]);
         } else {
           messageData = {
             senderId: currentUser.userId,
@@ -248,10 +303,10 @@ const ChatNew: React.FC = () => {
             content: newMessage.trim(),
             encrypted: true
           };
+          
+          const sentMessage = await sendMessage(messageData);
+          setMessages(prev => [...prev, sentMessage]);
         }
-
-        const sentMessage = await sendMessage(messageData);
-        setMessages(prev => [...prev, sentMessage]);
       }
 
       setNewMessage('');
@@ -515,8 +570,51 @@ const ChatNew: React.FC = () => {
     );
   };
 
+  const dismissNotification = (notificationId: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  };
+
   return (
     <div className="chat-container">
+      {/* Notification overlay */}
+      {notifications.length > 0 && (
+        <div className="notifications-overlay">
+          {notifications.slice(-3).map(notification => (
+            <div key={notification.id} className="notification-item">
+              <div className="notification-content">
+                {notification.type === 'reaction' && (
+                  <>
+                    <span className="notification-emoji">{notification.emoji}</span>
+                    <span>Someone reacted to your message</span>
+                  </>
+                )}
+                {notification.type === 'reply' && (
+                  <>
+                    <span className="notification-icon">↩️</span>
+                    <span>Someone replied to your message: {notification.messageContent?.substring(0, 30)}...</span>
+                  </>
+                )}
+                {notification.type === 'call_invite' && (
+                  <>
+                    <span className="notification-icon">📞</span>
+                    <span>{notification.senderName} is calling you ({notification.callType})</span>
+                  </>
+                )}
+                {notification.type === 'call_ended' && (
+                  <>
+                    <span className="notification-icon">📞</span>
+                    <span>Call has ended</span>
+                  </>
+                )}
+              </div>
+              <button onClick={() => dismissNotification(notification.id)} className="notification-dismiss">
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      
       <div className="chat-header">
         <div className="chat-header-info">
           <h1>🔐 Crypto 512 Chat Enhanced</h1>

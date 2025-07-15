@@ -525,6 +525,46 @@ export const logout = (): void => {
   }
 };
 
+// Notification functions
+export const sendNotification = async (recipientId: string, type: string, data: any): Promise<void> => {
+  try {
+    await fetch(`${API_BASE}/notifications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: JSON.stringify({
+        recipientId,
+        type,
+        ...data
+      }),
+    });
+  } catch (error) {
+    console.error('Send notification error:', error);
+  }
+};
+
+export const getNotifications = async (userId: string): Promise<any[]> => {
+  try {
+    const response = await fetch(`${API_BASE}/notifications?userId=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get notifications: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.notifications || [];
+  } catch (error: any) {
+    console.error('Get notifications error:', error);
+    return [];
+  }
+};
+
 // Aliases for better compatibility
 export const getRegistrationStatus = fetchRegistrationStatus;
 export const getSystemStatus = fetchSystemStatus;

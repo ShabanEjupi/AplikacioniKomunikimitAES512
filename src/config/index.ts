@@ -3,6 +3,9 @@ interface Config {
   API_BASE_URL: string;
   WS_URL: string;
   USE_HTTPS: boolean;
+  POLLING_INTERVAL: number;
+  MAX_FILE_SIZE: number;
+  ENABLE_DEBUG: boolean;
 }
 
 const config: Record<string, Config> = {
@@ -10,36 +13,61 @@ const config: Record<string, Config> = {
     API_BASE_URL: 'http://localhost:3001/.netlify/functions', // Local server with functions
     WS_URL: 'http://localhost:3001',
     USE_HTTPS: false,
+    POLLING_INTERVAL: 2000,
+    MAX_FILE_SIZE: 52428800, // 50MB
+    ENABLE_DEBUG: true,
   },
   production: {
     API_BASE_URL: '/.netlify/functions', // Direct access to Netlify Functions
     WS_URL: 'wss://secure-comms-aes512.netlify.app', // WebSocket not available in functions, will fallback
     USE_HTTPS: true,
+    POLLING_INTERVAL: 2000,
+    MAX_FILE_SIZE: 52428800, // 50MB
+    ENABLE_DEBUG: false,
   },
   test: {
     API_BASE_URL: 'http://localhost:3001/.netlify/functions', // Local server with functions
     WS_URL: 'http://localhost:3001',
     USE_HTTPS: false,
+    POLLING_INTERVAL: 1000, // Faster polling for tests
+    MAX_FILE_SIZE: 10485760, // 10MB for tests
+    ENABLE_DEBUG: true,
   }
 };
 
-// Force production mode when not running locally
-const isLocalhost = typeof window !== 'undefined' && 
-  (window.location.hostname === 'localhost' || 
-   window.location.hostname === '127.0.0.1' ||
-   window.location.port === '3000' ||
-   window.location.port === '3100');
+// Detect environment based on multiple factors
+const getEnvironment = (): string => {
+  // Check React environment variables first
+  if (process.env.REACT_APP_NODE_ENV) {
+    return process.env.REACT_APP_NODE_ENV;
+  }
+  
+  // Check Node environment
+  if (process.env.NODE_ENV === 'production') {
+    return 'production';
+  }
+  
+  // Check if running on localhost
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || 
+                       hostname === '127.0.0.1' ||
+                       hostname.includes('localhost');
+    
+    // If not localhost and not explicitly development, assume production
+    return isLocalhost ? 'development' : 'production';
+  }
+  
+  // Default to development for server-side rendering
+  return 'development';
+};
 
-// Use production config when deployed to Netlify
-const environment = isLocalhost 
-  ? 'development' 
-  : 'production';
+const environment = getEnvironment();
 
 // Additional debug logging
 console.log('🔧 Environment detection:', {
   NODE_ENV: process.env.NODE_ENV,
   REACT_APP_NODE_ENV: process.env.REACT_APP_NODE_ENV,
-  isLocalhost: isLocalhost,
   hostname: typeof window !== 'undefined' ? window.location.hostname : 'server-side',
   selected: environment,
   availableConfigs: Object.keys(config),

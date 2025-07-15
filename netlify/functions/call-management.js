@@ -63,6 +63,30 @@ exports.handler = async (event, context) => {
         });
         store.lastAccess = Date.now();
         
+        // Send call invitation notification to recipient
+        try {
+          // Use Netlify's URL environment variable (automatically set by Netlify)
+          const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+          await fetch(`${baseUrl}/.netlify/functions/notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recipientId: callData.recipientId,
+              type: 'call_invite',
+              senderId: callData.callerId,
+              senderName: callData.callerName,
+              callId: callData.callId,
+              callType: callData.type,
+              data: {
+                callType: callData.type,
+                callerName: callData.callerName
+              }
+            })
+          });
+        } catch (error) {
+          console.error('Failed to send call invitation notification:', error);
+        }
+        
         return {
           statusCode: 200,
           headers,
@@ -143,6 +167,32 @@ exports.handler = async (event, context) => {
         if (callToEnd) {
           callToEnd.status = 'ended';
           callToEnd.endedAt = new Date().toISOString();
+          
+          // Send call ended notification to both participants
+          const participants = [callToEnd.callerId, callToEnd.recipientId];
+          for (const participantId of participants) {
+            try {
+              // Use Netlify's URL environment variable (automatically set by Netlify)
+              const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+              await fetch(`${baseUrl}/.netlify/functions/notifications`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  recipientId: participantId,
+                  type: 'call_ended',
+                  callId: callId,
+                  data: {
+                    callType: callToEnd.type,
+                    duration: callToEnd.connectedAt ? 
+                      Math.floor((Date.now() - new Date(callToEnd.connectedAt).getTime()) / 1000) : 0
+                  }
+                })
+              });
+            } catch (error) {
+              console.error('Failed to send call ended notification:', error);
+            }
+          }
+          
           // Keep the call data briefly for the other party to see
           setTimeout(() => {
             store.activeCalls.delete(callId);

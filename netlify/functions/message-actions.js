@@ -120,6 +120,28 @@ exports.handler = async (event, context) => {
             emoji,
             timestamp: new Date().toISOString()
           });
+          
+          // Send notification to message sender (if not reacting to own message)
+          if (message.senderId !== userId) {
+            try {
+              // Use Netlify's URL environment variable (automatically set by Netlify)
+              const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+              await fetch(`${baseUrl}/.netlify/functions/notifications`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  recipientId: message.senderId,
+                  type: 'reaction',
+                  senderId: userId,
+                  messageId: message.id,
+                  emoji: emoji,
+                  messageContent: message.content.substring(0, 50) + (message.content.length > 50 ? '...' : '')
+                })
+              });
+            } catch (error) {
+              console.error('Failed to send reaction notification:', error);
+            }
+          }
         }
         break;
 
@@ -154,6 +176,30 @@ exports.handler = async (event, context) => {
         
         store.messages.push(replyMessage);
         store.lastAccess = Date.now();
+        
+        // Send notification to original message sender (if not replying to own message)
+        if (message.senderId !== userId) {
+          try {
+            // Use Netlify's URL environment variable (automatically set by Netlify)
+            const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+            await fetch(`${baseUrl}/.netlify/functions/notifications`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipientId: message.senderId,
+                type: 'reply',
+                senderId: userId,
+                messageId: replyMessage.id,
+                messageContent: replyContent.substring(0, 100) + (replyContent.length > 100 ? '...' : ''),
+                data: {
+                  originalMessage: message.content.substring(0, 50) + (message.content.length > 50 ? '...' : '')
+                }
+              })
+            });
+          } catch (error) {
+            console.error('Failed to send reply notification:', error);
+          }
+        }
         
         return {
           statusCode: 201,
