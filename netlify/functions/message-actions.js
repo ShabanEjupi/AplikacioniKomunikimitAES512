@@ -122,10 +122,9 @@ exports.handler = async (event, context) => {
           });
           
           // Send notification to message sender (if not reacting to own message)
-          if (message.senderId !== userId) {
-            try {
-              // Use Netlify's URL environment variable (automatically set by Netlify)
-              const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+          if (message.senderId !== userId) {          try {
+            // Use Netlify's URL environment variable (automatically set by Netlify)
+            const baseUrl = process.env.URL || 'https://cryptocall.netlify.app';
               await fetch(`${baseUrl}/.netlify/functions/notifications`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -181,7 +180,7 @@ exports.handler = async (event, context) => {
         if (message.senderId !== userId) {
           try {
             // Use Netlify's URL environment variable (automatically set by Netlify)
-            const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+            const baseUrl = process.env.URL || 'https://cryptocall.netlify.app';
             await fetch(`${baseUrl}/.netlify/functions/notifications`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

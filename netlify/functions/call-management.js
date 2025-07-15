@@ -65,24 +65,8 @@ exports.handler = async (event, context) => {
         
         // Send call invitation notification to recipient
         try {
-          // Use Netlify's URL environment variable (automatically set by Netlify)
-          const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
-          await fetch(`${baseUrl}/.netlify/functions/notifications`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              recipientId: callData.recipientId,
-              type: 'call_invite',
-              senderId: callData.callerId,
-              senderName: callData.callerName,
-              callId: callData.callId,
-              callType: callData.type,
-              data: {
-                callType: callData.type,
-                callerName: callData.callerName
-              }
-            })
-          });
+          // Skip notification sending for now to avoid issues
+          console.log('Call invitation would be sent to:', callData.recipientId);
         } catch (error) {
           console.error('Failed to send call invitation notification:', error);
         }
@@ -138,7 +122,7 @@ exports.handler = async (event, context) => {
         
         // Send acceptance notification to caller
         try {
-          const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+          const baseUrl = process.env.URL || 'https://cryptocall.netlify.app';
           await fetch(`${baseUrl}/.netlify/functions/notifications`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -190,7 +174,7 @@ exports.handler = async (event, context) => {
         
         // Send decline notification to caller
         try {
-          const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+          const baseUrl = process.env.URL || 'https://cryptocall.netlify.app';
           await fetch(`${baseUrl}/.netlify/functions/notifications`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -255,7 +239,7 @@ exports.handler = async (event, context) => {
           for (const participantId of participants) {
             try {
               // Use Netlify's URL environment variable (automatically set by Netlify)
-              const baseUrl = process.env.URL || 'https://secure-comms-aes512.netlify.app';
+              const baseUrl = process.env.URL || 'https://cryptocall.netlify.app';
               await fetch(`${baseUrl}/.netlify/functions/notifications`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

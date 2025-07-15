@@ -19,7 +19,7 @@ const config: Record<string, Config> = {
   },
   production: {
     API_BASE_URL: '/.netlify/functions', // Direct access to Netlify Functions
-    WS_URL: 'wss://secure-comms-aes512.netlify.app', // WebSocket not available in functions, will fallback
+    WS_URL: 'wss://cryptocall.netlify.app', // WebSocket not available in functions, will fallback
     USE_HTTPS: true,
     POLLING_INTERVAL: 2000,
     MAX_FILE_SIZE: 52428800, // 50MB
